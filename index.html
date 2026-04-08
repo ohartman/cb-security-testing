@@ -359,6 +359,70 @@
             <div class="test-list" id="list-bypass"></div>
         </section>
 
+        <section id="section-proxies">
+            <div class="section-header">
+                <h2>Web Proxy / Unblocker Sites</h2>
+                <div class="counts" id="counts-proxies"></div>
+            </div>
+            <div class="test-list" id="list-proxies"></div>
+        </section>
+
+        <section id="section-games">
+            <div class="section-header">
+                <h2>Unblocked Games Sites</h2>
+                <div class="counts" id="counts-games"></div>
+            </div>
+            <div class="test-list" id="list-games"></div>
+        </section>
+
+        <section id="section-social">
+            <div class="section-header">
+                <h2>Social Media & Messaging</h2>
+                <div class="counts" id="counts-social"></div>
+            </div>
+            <div class="test-list" id="list-social"></div>
+        </section>
+
+        <section id="section-streaming">
+            <div class="section-header">
+                <h2>Streaming & Entertainment</h2>
+                <div class="counts" id="counts-streaming"></div>
+            </div>
+            <div class="test-list" id="list-streaming"></div>
+        </section>
+
+        <section id="section-cipa">
+            <div class="section-header">
+                <h2>CIPA Compliance Categories</h2>
+                <div class="counts" id="counts-cipa"></div>
+            </div>
+            <div class="test-list" id="list-cipa"></div>
+        </section>
+
+        <section id="section-ai">
+            <div class="section-header">
+                <h2>AI Tools</h2>
+                <div class="counts" id="counts-ai"></div>
+            </div>
+            <div class="test-list" id="list-ai"></div>
+        </section>
+
+        <section id="section-vpn">
+            <div class="section-header">
+                <h2>VPN & Privacy Services</h2>
+                <div class="counts" id="counts-vpn"></div>
+            </div>
+            <div class="test-list" id="list-vpn"></div>
+        </section>
+
+        <section id="section-cloud-gaming">
+            <div class="section-header">
+                <h2>Cloud Gaming Services</h2>
+                <div class="counts" id="counts-cloud-gaming"></div>
+            </div>
+            <div class="test-list" id="list-cloud-gaming"></div>
+        </section>
+
         <section id="section-internal">
             <div class="section-header">
                 <h2>Internal Infrastructure Reachability</h2>
@@ -982,6 +1046,740 @@ const TESTS = [
         }
     },
 
+    // ============ WEB PROXY / UNBLOCKER SITES ============
+    // These are specific proxy sites that show up repeatedly in student
+    // bypass guides. Each one is a known-bad destination for student
+    // devices - reachable means the filter missed it.
+
+    {
+        id: 'proxy-genmirror',
+        name: 'Gen Mirror',
+        detail: 'Web proxy frequently recommended in student bypass guides',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://www.genmirror.com/', 'bad');
+        }
+    },
+    {
+        id: 'proxy-kproxy',
+        name: 'KProxy',
+        detail: 'Long-running web proxy with browser extension, popular with students',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://www.kproxy.com/', 'bad');
+        }
+    },
+    {
+        id: 'proxy-hidester',
+        name: 'Hidester',
+        detail: 'Free/premium web proxy service',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://hidester.com/', 'bad');
+        }
+    },
+    {
+        id: 'proxy-proxysite',
+        name: 'ProxySite.com',
+        detail: 'Free web proxy with server selection',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://www.proxysite.com/', 'bad');
+        }
+    },
+    {
+        id: 'proxy-filterbypass',
+        name: 'FilterBypass',
+        detail: 'Proxy specifically marketed for school filter bypass',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://www.filterbypass.me/', 'bad');
+        }
+    },
+    {
+        id: 'proxy-proxfree',
+        name: 'ProxFree',
+        detail: 'Web proxy with JavaScript/cookie toggles',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://www.proxfree.com/', 'bad');
+        }
+    },
+    {
+        id: 'proxy-blockaway',
+        name: 'BlockAway',
+        detail: 'Web proxy specifically marketed for schools and workplaces',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://www.blockaway.net/', 'bad');
+        }
+    },
+    {
+        id: 'proxy-vpnproxysite',
+        name: 'VPN Proxy Site',
+        detail: 'Web-based proxy with browser interface',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://vpnproxy.site/', 'bad');
+        }
+    },
+    {
+        id: 'proxy-foreverproxy',
+        name: 'Forever Proxy',
+        detail: 'Web proxy with encrypted connections',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://www.foreverproxy.com/', 'bad');
+        }
+    },
+    {
+        id: 'proxy-4everproxy',
+        name: '4everproxy',
+        detail: 'Another commonly-used free web proxy',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://www.4everproxy.com/', 'bad');
+        }
+    },
+    {
+        id: 'proxy-bitly',
+        name: 'bit.ly (URL shortener)',
+        detail: 'URL shorteners sometimes bypass domain-based blocklists',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://bitly.com/', 'warn');
+        }
+    },
+    {
+        id: 'proxy-tinyurl',
+        name: 'TinyURL',
+        detail: 'URL shortener - can be used to obfuscate blocked URLs',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://tinyurl.com/', 'warn');
+        }
+    },
+    {
+        id: 'proxy-isgd',
+        name: 'is.gd (URL shortener)',
+        detail: 'URL shortener - can be used to obfuscate blocked URLs',
+        section: 'proxies',
+        run: async () => {
+            return await testFetch('https://is.gd/', 'warn');
+        }
+    },
+
+    // ============ UNBLOCKED GAMES SITES ============
+    // These are the #1 category students actually use. Many are hosted
+    // on sites.google.com which makes them hard to block without breaking
+    // legitimate educational Google Sites content.
+
+    {
+        id: 'games-classroom6x',
+        name: 'Classroom 6x',
+        detail: 'Major unblocked games hub, very popular with K-12 students',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://classroom6x.com/', 'bad');
+        }
+    },
+    {
+        id: 'games-tyrone',
+        name: "Tyrone's Unblocked Games",
+        detail: "One of the most popular 'unblocked games' aggregators",
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://sites.google.com/site/tyronesgames/', 'bad');
+        }
+    },
+    {
+        id: 'games-unblocked66',
+        name: 'Unblocked Games 66',
+        detail: 'Long-running unblocked games site',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://sites.google.com/site/unblockedgames66/', 'bad');
+        }
+    },
+    {
+        id: 'games-unblocked76',
+        name: 'Unblocked Games 76',
+        detail: 'Another popular games aggregator',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://sites.google.com/site/unblockedgames76/', 'bad');
+        }
+    },
+    {
+        id: 'games-unblocked77',
+        name: 'Unblocked Games 77',
+        detail: 'Another variant in the unblocked-games family',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://sites.google.com/site/unblockedgames77play/', 'bad');
+        }
+    },
+    {
+        id: 'games-freezenova',
+        name: 'Freezenova',
+        detail: 'Game site commonly used to bypass school filters',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://www.freezenova.com/', 'bad');
+        }
+    },
+    {
+        id: 'games-mathsspot',
+        name: 'Mathsspot (disguised games)',
+        detail: 'Game site that disguises itself as a math resource',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://mathsspot.com/', 'bad');
+        }
+    },
+    {
+        id: 'games-coolmath',
+        name: 'Coolmath Games',
+        detail: 'Usually allowed (educational), but worth confirming',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://www.coolmathgames.com/', 'info');
+        }
+    },
+    {
+        id: 'games-hoodamath',
+        name: 'Hooda Math',
+        detail: 'Usually allowed (educational) but also hosts non-math games',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://www.hoodamath.com/', 'info');
+        }
+    },
+    {
+        id: 'games-krunker',
+        name: 'Krunker.io',
+        detail: 'Browser FPS game popular in schools',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://krunker.io/', 'bad');
+        }
+    },
+    {
+        id: 'games-slitherio',
+        name: 'Slither.io',
+        detail: 'Browser multiplayer snake game',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://slither.io/', 'bad');
+        }
+    },
+    {
+        id: 'games-agario',
+        name: 'Agar.io',
+        detail: 'Browser multiplayer blob game',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://agar.io/', 'bad');
+        }
+    },
+    {
+        id: 'games-skribbl',
+        name: 'Skribbl.io',
+        detail: 'Multiplayer drawing game, huge with middle schoolers',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://skribbl.io/', 'bad');
+        }
+    },
+    {
+        id: 'games-2048',
+        name: '2048',
+        detail: 'Classic puzzle, often allowed but worth confirming',
+        section: 'games',
+        run: async () => {
+            return await testFetch('https://play2048.co/', 'info');
+        }
+    },
+
+    // ============ SOCIAL MEDIA & MESSAGING ============
+
+    {
+        id: 'social-instagram',
+        name: 'Instagram',
+        detail: 'Social media - typically blocked for students',
+        section: 'social',
+        run: async () => {
+            return await testFetch('https://www.instagram.com/', 'bad');
+        }
+    },
+    {
+        id: 'social-tiktok',
+        name: 'TikTok',
+        detail: 'Short-form video - typically blocked and a major CIPA concern',
+        section: 'social',
+        run: async () => {
+            return await testFetch('https://www.tiktok.com/', 'bad');
+        }
+    },
+    {
+        id: 'social-snapchat',
+        name: 'Snapchat Web',
+        detail: 'Messaging - typically blocked for students',
+        section: 'social',
+        run: async () => {
+            return await testFetch('https://web.snapchat.com/', 'bad');
+        }
+    },
+    {
+        id: 'social-facebook',
+        name: 'Facebook',
+        detail: 'Social media - typically blocked for students',
+        section: 'social',
+        run: async () => {
+            return await testFetch('https://www.facebook.com/', 'bad');
+        }
+    },
+    {
+        id: 'social-omegle-alt',
+        name: 'Chatroulette',
+        detail: 'Anonymous video chat - major CIPA concern, should be blocked',
+        section: 'social',
+        run: async () => {
+            return await testFetch('https://chatroulette.com/', 'bad');
+        }
+    },
+    {
+        id: 'social-emeraldchat',
+        name: 'Emerald Chat',
+        detail: 'Anonymous chat service - CIPA concern, should be blocked',
+        section: 'social',
+        run: async () => {
+            return await testFetch('https://emeraldchat.com/', 'bad');
+        }
+    },
+    {
+        id: 'social-telegram',
+        name: 'Telegram Web',
+        detail: 'Messaging app web version - often blocked',
+        section: 'social',
+        run: async () => {
+            return await testFetch('https://web.telegram.org/', 'bad');
+        }
+    },
+    {
+        id: 'social-whatsapp',
+        name: 'WhatsApp Web',
+        detail: 'Messaging - often blocked for students',
+        section: 'social',
+        run: async () => {
+            return await testFetch('https://web.whatsapp.com/', 'bad');
+        }
+    },
+    {
+        id: 'social-tumblr',
+        name: 'Tumblr',
+        detail: 'Blogging platform with mature content - typically blocked',
+        section: 'social',
+        run: async () => {
+            return await testFetch('https://www.tumblr.com/', 'bad');
+        }
+    },
+    {
+        id: 'social-4chan',
+        name: '4chan',
+        detail: 'Anonymous imageboard - should be blocked (adult content)',
+        section: 'social',
+        run: async () => {
+            return await testFetch('https://www.4chan.org/', 'bad');
+        }
+    },
+
+    // ============ STREAMING & ENTERTAINMENT ============
+
+    {
+        id: 'stream-hulu',
+        name: 'Hulu',
+        detail: 'Video streaming - typically blocked to preserve bandwidth',
+        section: 'streaming',
+        run: async () => {
+            return await testFetch('https://www.hulu.com/', 'info');
+        }
+    },
+    {
+        id: 'stream-disneyplus',
+        name: 'Disney+',
+        detail: 'Video streaming - typically blocked',
+        section: 'streaming',
+        run: async () => {
+            return await testFetch('https://www.disneyplus.com/', 'info');
+        }
+    },
+    {
+        id: 'stream-crunchyroll',
+        name: 'Crunchyroll',
+        detail: 'Anime streaming - commonly accessed by students',
+        section: 'streaming',
+        run: async () => {
+            return await testFetch('https://www.crunchyroll.com/', 'info');
+        }
+    },
+    {
+        id: 'stream-kick',
+        name: 'Kick.com',
+        detail: 'Twitch alternative - less commonly filtered, worth checking',
+        section: 'streaming',
+        run: async () => {
+            return await testFetch('https://kick.com/', 'info');
+        }
+    },
+    {
+        id: 'stream-spotify',
+        name: 'Spotify',
+        detail: 'Music streaming - often allowed, worth confirming',
+        section: 'streaming',
+        run: async () => {
+            return await testFetch('https://open.spotify.com/', 'info');
+        }
+    },
+    {
+        id: 'stream-soundcloud',
+        name: 'SoundCloud',
+        detail: 'Music streaming',
+        section: 'streaming',
+        run: async () => {
+            return await testFetch('https://soundcloud.com/', 'info');
+        }
+    },
+    {
+        id: 'stream-pandora',
+        name: 'Pandora',
+        detail: 'Music streaming',
+        section: 'streaming',
+        run: async () => {
+            return await testFetch('https://www.pandora.com/', 'info');
+        }
+    },
+
+    // ============ CIPA COMPLIANCE CATEGORIES ============
+    // These tests check whether content that CIPA requires schools to block
+    // is actually blocked. Any of these being reachable is a compliance issue.
+    // Note: we test known-safe landing pages, not actual explicit content.
+
+    {
+        id: 'cipa-gambling',
+        name: 'Online casino (bet365)',
+        detail: 'Gambling site - should be blocked per CIPA',
+        section: 'cipa',
+        run: async () => {
+            return await testFetch('https://www.bet365.com/', 'bad');
+        }
+    },
+    {
+        id: 'cipa-poker',
+        name: 'PokerStars',
+        detail: 'Gambling/poker - should be blocked per CIPA',
+        section: 'cipa',
+        run: async () => {
+            return await testFetch('https://www.pokerstars.com/', 'bad');
+        }
+    },
+    {
+        id: 'cipa-weapons',
+        name: 'Weapons retailer',
+        detail: 'Weapons/ammunition retailer - typically blocked in K-12',
+        section: 'cipa',
+        run: async () => {
+            return await testFetch('https://www.guns.com/', 'warn');
+        }
+    },
+    {
+        id: 'cipa-drugs',
+        name: 'Cannabis retailer',
+        detail: 'Drug-related content - typically blocked in K-12',
+        section: 'cipa',
+        run: async () => {
+            return await testFetch('https://www.leafly.com/', 'warn');
+        }
+    },
+    {
+        id: 'cipa-piracy',
+        name: 'The Pirate Bay',
+        detail: 'Piracy site - should be blocked per AUP',
+        section: 'cipa',
+        run: async () => {
+            return await testFetch('https://thepiratebay.org/', 'bad');
+        }
+    },
+    {
+        id: 'cipa-torrent',
+        name: '1337x (torrent site)',
+        detail: 'Piracy/torrent search - should be blocked',
+        section: 'cipa',
+        run: async () => {
+            return await testFetch('https://1337x.to/', 'bad');
+        }
+    },
+    {
+        id: 'cipa-dating',
+        name: 'Tinder (dating)',
+        detail: 'Dating site - inappropriate for K-12, should be blocked',
+        section: 'cipa',
+        run: async () => {
+            return await testFetch('https://tinder.com/', 'bad');
+        }
+    },
+    {
+        id: 'cipa-selfharm-info',
+        name: 'Self-harm community (Reddit)',
+        detail: 'Specific Reddit community - Reddit is often blocked but sub-paths leak',
+        section: 'cipa',
+        run: async () => {
+            return await testFetch('https://old.reddit.com/r/selfharm/', 'bad');
+        }
+    },
+
+    // ============ AI TOOLS ============
+    // Districts are wildly inconsistent here. Some allow, some block, some
+    // require specific educational licensing. Worth knowing what's reachable
+    // to have a conversation about policy.
+
+    {
+        id: 'ai-chatgpt',
+        name: 'ChatGPT',
+        detail: 'OpenAI ChatGPT - policy varies by district',
+        section: 'ai',
+        run: async () => {
+            return await testFetch('https://chat.openai.com/', 'info');
+        }
+    },
+    {
+        id: 'ai-claude',
+        name: 'Claude',
+        detail: 'Anthropic Claude - policy varies by district',
+        section: 'ai',
+        run: async () => {
+            return await testFetch('https://claude.ai/', 'info');
+        }
+    },
+    {
+        id: 'ai-gemini',
+        name: 'Google Gemini',
+        detail: 'Google Gemini - often allowed via Google Workspace',
+        section: 'ai',
+        run: async () => {
+            return await testFetch('https://gemini.google.com/', 'info');
+        }
+    },
+    {
+        id: 'ai-copilot',
+        name: 'Microsoft Copilot',
+        detail: 'Microsoft Copilot web interface',
+        section: 'ai',
+        run: async () => {
+            return await testFetch('https://copilot.microsoft.com/', 'info');
+        }
+    },
+    {
+        id: 'ai-perplexity',
+        name: 'Perplexity',
+        detail: 'AI-powered search engine',
+        section: 'ai',
+        run: async () => {
+            return await testFetch('https://www.perplexity.ai/', 'info');
+        }
+    },
+    {
+        id: 'ai-characterai',
+        name: 'Character.AI',
+        detail: 'AI roleplay/chat - CIPA concern, often blocked for minors',
+        section: 'ai',
+        run: async () => {
+            return await testFetch('https://character.ai/', 'bad');
+        }
+    },
+    {
+        id: 'ai-huggingface',
+        name: 'Hugging Face',
+        detail: 'AI model hub - advanced but typically reachable',
+        section: 'ai',
+        run: async () => {
+            return await testFetch('https://huggingface.co/', 'info');
+        }
+    },
+    {
+        id: 'ai-replicate',
+        name: 'Replicate',
+        detail: 'AI model hosting platform',
+        section: 'ai',
+        run: async () => {
+            return await testFetch('https://replicate.com/', 'info');
+        }
+    },
+
+    // ============ VPN & PRIVACY SERVICES ============
+    // VPN service websites being reachable lets students learn about VPNs
+    // and download them on personal devices. Actually connecting to a VPN
+    // from a managed Chromebook is usually blocked separately.
+
+    {
+        id: 'vpn-nordvpn',
+        name: 'NordVPN',
+        detail: 'Major commercial VPN - typically blocked in K-12',
+        section: 'vpn',
+        run: async () => {
+            return await testFetch('https://nordvpn.com/', 'warn');
+        }
+    },
+    {
+        id: 'vpn-protonvpn',
+        name: 'ProtonVPN',
+        detail: 'Privacy-focused VPN',
+        section: 'vpn',
+        run: async () => {
+            return await testFetch('https://protonvpn.com/', 'warn');
+        }
+    },
+    {
+        id: 'vpn-expressvpn',
+        name: 'ExpressVPN',
+        detail: 'Major commercial VPN',
+        section: 'vpn',
+        run: async () => {
+            return await testFetch('https://www.expressvpn.com/', 'warn');
+        }
+    },
+    {
+        id: 'vpn-hola',
+        name: 'Hola VPN',
+        detail: 'Browser-extension VPN popular with students',
+        section: 'vpn',
+        run: async () => {
+            return await testFetch('https://hola.org/', 'bad');
+        }
+    },
+    {
+        id: 'vpn-tunnelbear',
+        name: 'TunnelBear',
+        detail: 'Free tier VPN commonly used by students',
+        section: 'vpn',
+        run: async () => {
+            return await testFetch('https://www.tunnelbear.com/', 'warn');
+        }
+    },
+    {
+        id: 'vpn-windscribe',
+        name: 'Windscribe',
+        detail: 'Free tier VPN',
+        section: 'vpn',
+        run: async () => {
+            return await testFetch('https://windscribe.com/', 'warn');
+        }
+    },
+    {
+        id: 'vpn-psiphon',
+        name: 'Psiphon',
+        detail: 'Circumvention tool designed to bypass filtering',
+        section: 'vpn',
+        run: async () => {
+            return await testFetch('https://psiphon.ca/', 'bad');
+        }
+    },
+    {
+        id: 'vpn-lantern',
+        name: 'Lantern',
+        detail: 'Circumvention tool',
+        section: 'vpn',
+        run: async () => {
+            return await testFetch('https://lantern.io/', 'bad');
+        }
+    },
+    {
+        id: 'vpn-outline',
+        name: 'Outline VPN',
+        detail: 'Google-backed VPN project',
+        section: 'vpn',
+        run: async () => {
+            return await testFetch('https://getoutline.org/', 'warn');
+        }
+    },
+
+    // ============ CLOUD GAMING SERVICES ============
+    // These stream games from remote servers - the Chromebook just renders
+    // video. Filters that look for game downloads miss them entirely.
+
+    {
+        id: 'cloud-nowgg',
+        name: 'Now.gg',
+        detail: 'Cloud gaming for mobile games (Roblox, Minecraft) in browser - HUGE with students',
+        section: 'cloud-gaming',
+        run: async () => {
+            return await testFetch('https://now.gg/', 'bad');
+        }
+    },
+    {
+        id: 'cloud-cloudmoon',
+        name: 'CloudMoon',
+        detail: 'Cloud gaming platform popular with K-12 students',
+        section: 'cloud-gaming',
+        run: async () => {
+            return await testFetch('https://www.cloudmoon.ai/', 'bad');
+        }
+    },
+    {
+        id: 'cloud-geforcenow',
+        name: 'GeForce Now',
+        detail: "NVIDIA's cloud gaming service",
+        section: 'cloud-gaming',
+        run: async () => {
+            return await testFetch('https://www.nvidia.com/en-us/geforce-now/', 'warn');
+        }
+    },
+    {
+        id: 'cloud-xbox',
+        name: 'Xbox Cloud Gaming',
+        detail: "Microsoft's cloud gaming service",
+        section: 'cloud-gaming',
+        run: async () => {
+            return await testFetch('https://www.xbox.com/en-US/play', 'warn');
+        }
+    },
+    {
+        id: 'cloud-roblox',
+        name: 'Roblox',
+        detail: 'Roblox home page - typically blocked but worth confirming',
+        section: 'cloud-gaming',
+        run: async () => {
+            return await testFetch('https://www.roblox.com/', 'bad');
+        }
+    },
+    {
+        id: 'cloud-minecraft',
+        name: 'Minecraft',
+        detail: 'Minecraft.net home page',
+        section: 'cloud-gaming',
+        run: async () => {
+            return await testFetch('https://www.minecraft.net/', 'info');
+        }
+    },
+    {
+        id: 'cloud-poki',
+        name: 'Poki',
+        detail: 'Browser game aggregator, huge with students',
+        section: 'cloud-gaming',
+        run: async () => {
+            return await testFetch('https://poki.com/', 'bad');
+        }
+    },
+    {
+        id: 'cloud-crazygames',
+        name: 'CrazyGames',
+        detail: 'Browser game aggregator',
+        section: 'cloud-gaming',
+        run: async () => {
+            return await testFetch('https://www.crazygames.com/', 'bad');
+        }
+    },
+
     // ============ INTERNAL INFRASTRUCTURE ============
     // These test reachability to common internal infrastructure hostnames.
     // They're best-effort - some will fail due to DNS not resolving, others due
@@ -1072,7 +1870,7 @@ const state = {
 };
 
 function renderTestRows() {
-    const sections = ['device', 'policies', 'capabilities', 'filter', 'bypass', 'internal'];
+    const sections = ['device', 'policies', 'capabilities', 'filter', 'bypass', 'proxies', 'games', 'social', 'streaming', 'cipa', 'ai', 'vpn', 'cloud-gaming', 'internal'];
     for (const section of sections) {
         const listEl = document.getElementById('list-' + section);
         listEl.innerHTML = '';
@@ -1221,6 +2019,14 @@ function exportReport() {
         'capabilities': 'BROWSER CAPABILITIES & API ACCESS',
         'filter': 'CONTENT FILTER REACHABILITY',
         'bypass': 'FILTER BYPASS METHODS',
+        'proxies': 'WEB PROXY / UNBLOCKER SITES',
+        'games': 'UNBLOCKED GAMES SITES',
+        'social': 'SOCIAL MEDIA & MESSAGING',
+        'streaming': 'STREAMING & ENTERTAINMENT',
+        'cipa': 'CIPA COMPLIANCE CATEGORIES',
+        'ai': 'AI TOOLS',
+        'vpn': 'VPN & PRIVACY SERVICES',
+        'cloud-gaming': 'CLOUD GAMING SERVICES',
         'internal': 'INTERNAL INFRASTRUCTURE REACHABILITY'
     };
 
