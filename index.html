@@ -31,30 +31,11 @@
         min-height: 100vh;
     }
 
-    .container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 32px 24px;
-    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
 
-    header {
-        border-bottom: 2px solid var(--border);
-        padding-bottom: 20px;
-        margin-bottom: 28px;
-    }
-
-    h1 {
-        color: var(--accent);
-        font-size: 28px;
-        font-weight: 700;
-        letter-spacing: -0.5px;
-    }
-
-    .subtitle {
-        color: var(--text-dim);
-        font-size: 14px;
-        margin-top: 6px;
-    }
+    header { border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 28px; }
+    h1 { color: var(--accent); font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+    .subtitle { color: var(--text-dim); font-size: 14px; margin-top: 6px; }
 
     .notice {
         background: var(--surface);
@@ -65,17 +46,19 @@
         font-size: 14px;
         color: var(--text-dim);
     }
-
     .notice strong { color: var(--text); }
     .notice.warn { border-left-color: var(--warn); }
-    .notice code { background: var(--surface-alt); padding: 1px 6px; border-radius: 3px; color: var(--text); font-family: var(--mono); font-size: 12px; }
-
-    .controls {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 28px;
-        flex-wrap: wrap;
+    .notice.good { border-left-color: var(--good); }
+    .notice code {
+        background: var(--surface-alt);
+        padding: 1px 6px;
+        border-radius: 3px;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 12px;
     }
+
+    .controls { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
 
     button {
         background: var(--accent);
@@ -89,15 +72,9 @@
         font-family: inherit;
         transition: background 150ms;
     }
-
     button:hover { background: var(--accent-bright); }
     button:disabled { background: var(--surface-alt); color: var(--text-dim); cursor: not-allowed; }
-
-    button.secondary {
-        background: var(--surface-alt);
-        color: var(--text);
-        border: 1px solid var(--border);
-    }
+    button.secondary { background: var(--surface-alt); color: var(--text); border: 1px solid var(--border); }
     button.secondary:hover { background: var(--border); }
 
     .summary {
@@ -114,7 +91,6 @@
         padding: 16px;
         text-align: center;
     }
-
     .summary-card .num { font-size: 32px; font-weight: 700; font-family: var(--mono); }
     .summary-card .label { font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 4px; letter-spacing: 0.5px; }
     .summary-card.good .num { color: var(--good); }
@@ -139,7 +115,6 @@
         justify-content: space-between;
         align-items: center;
     }
-
     .section-header h2 {
         color: var(--accent-bright);
         font-size: 15px;
@@ -147,7 +122,6 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-
     .section-header .counts { font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
 
     .section-desc {
@@ -252,22 +226,28 @@
     <div class="container">
         <header>
             <h1>ICSD Student Chromebook Audit</h1>
-            <div class="subtitle">Policy enforcement and bypass-vector assessment for managed student devices</div>
+            <div class="subtitle">Policy enforcement and browser capability assessment (Linewize-safe)</div>
         </header>
 
+        <div class="notice good">
+            <strong>Linewize-safe design:</strong> This version is designed to run safely alongside Linewize Connect.
+            It makes NO requests to URLs Linewize would consider bad - no proxy sites, no DoH endpoints, no CIPA
+            probes. All tests either (1) make no network requests at all, (2) only reach Google and district
+            services that are already allowlisted, or (3) are manual checks you perform yourself. The goal is to
+            produce useful findings without triggering Linewize's block page redirect.
+        </div>
+
         <div class="notice">
-            <strong>What this tests:</strong> This tool focuses on things your content filter (Linewize) cannot tell you.
-            Rather than testing whether specific URLs are blocked (Linewize handles that well), it checks Chrome policy
-            enforcement, browser capability restrictions, bypass vectors that operate below the content-filter layer,
-            and whether the filter extension itself is detectable. The findings identify gaps that content filtering
-            alone cannot close.
+            <strong>What this tests:</strong> The things content filtering cannot tell you - Chrome policy
+            enforcement, browser hardware APIs, WebRTC behavior, and a comprehensive manual checklist for the
+            physical verification work. Content filter effectiveness is verified separately in your Linewize
+            dashboard, not here.
         </div>
 
         <div class="notice warn">
-            <strong>Manual checks needed:</strong> Several important checks (developer mode, Powerwash, USB boot,
-            <code>chrome://policy</code>, <code>chrome://management</code>) cannot be automated from JavaScript.
-            Those are listed in the "Manual Verification" section at the bottom with step-by-step instructions.
-            Run the automated tests first, then walk through the manual ones.
+            <strong>State persistence:</strong> Test results are saved to localStorage, so if something causes
+            the page to reload or navigate away, click "Run All Tests" again to continue. Completed results
+            will be restored.
         </div>
 
         <div class="controls">
@@ -286,61 +266,37 @@
 
         <section id="section-device">
             <div class="section-header"><h2>Device & Browser Fingerprint</h2><div class="counts" id="counts-device"></div></div>
-            <div class="section-desc">Baseline info about the device under test. Used to document the testing environment and verify we're on a ChromeOS managed device.</div>
+            <div class="section-desc">Baseline info about the device under test. Purely local - no network requests.</div>
             <div class="test-list" id="list-device"></div>
-        </section>
-
-        <section id="section-management">
-            <div class="section-header"><h2>Enterprise Management Indicators</h2><div class="counts" id="counts-management"></div></div>
-            <div class="section-desc">Does the device report being managed? Checks for Linewize Connect extension and other indicators that enterprise policy is actually being enforced.</div>
-            <div class="test-list" id="list-management"></div>
-        </section>
-
-        <section id="section-policies">
-            <div class="section-header"><h2>Chrome Policy Enforcement (Inferred)</h2><div class="counts" id="counts-policies"></div></div>
-            <div class="section-desc">Infers whether critical Chrome policies are enforced by testing browser behavior. We can't read policies directly from JS, but we can test whether the behaviors they control are locked down.</div>
-            <div class="test-list" id="list-policies"></div>
         </section>
 
         <section id="section-capabilities">
             <div class="section-header"><h2>Browser Capabilities & Hardware APIs</h2><div class="counts" id="counts-capabilities"></div></div>
-            <div class="section-desc">Hardware-level APIs (USB, Serial, HID, Bluetooth) bypass any network filter entirely. If these are available to student JavaScript, a malicious webpage could talk directly to connected hardware.</div>
+            <div class="section-desc">Hardware-level APIs (USB, Serial, HID, Bluetooth) that bypass any network filter entirely. Purely local JavaScript checks - no network requests.</div>
             <div class="test-list" id="list-capabilities"></div>
+        </section>
+
+        <section id="section-policies">
+            <div class="section-header"><h2>Chrome Policy Enforcement (Inferred)</h2><div class="counts" id="counts-policies"></div></div>
+            <div class="section-desc">Infers whether critical Chrome policies are enforced by testing behavior. Purely local - no network requests.</div>
+            <div class="test-list" id="list-policies"></div>
         </section>
 
         <section id="section-webrtc">
             <div class="section-header"><h2>WebRTC & Network Leakage</h2><div class="counts" id="counts-webrtc"></div></div>
-            <div class="section-desc">WebRTC can leak local network IPs, enable peer-to-peer tunneling (a known filter bypass), and typically is not caught by content filters. Chrome policy controls how WebRTC handles IPs.</div>
+            <div class="section-desc">WebRTC local IP leak test. Uses WebRTC internally but does not make HTTP requests to blocked URLs.</div>
             <div class="test-list" id="list-webrtc"></div>
         </section>
 
-        <section id="section-bypass">
-            <div class="section-header"><h2>Filter Bypass Methods</h2><div class="counts" id="counts-bypass"></div></div>
-            <div class="section-desc">The bypass vectors that actually work in real K-12 environments. DNS-over-HTTPS is the big one - if students can enable secure DNS in Chrome, Linewize's DNS-level visibility is bypassed entirely.</div>
-            <div class="test-list" id="list-bypass"></div>
-        </section>
-
-        <section id="section-monitoring">
-            <div class="section-header"><h2>Monitoring & Classroom Tools</h2><div class="counts" id="counts-monitoring"></div></div>
-            <div class="section-desc">Attempts to detect whether classroom monitoring tools (Classwize, GoGuardian, Securly, Hapara) are running. Tests whether student activity is being observed, not just filtered.</div>
-            <div class="test-list" id="list-monitoring"></div>
-        </section>
-
-        <section id="section-cipa">
-            <div class="section-header"><h2>CIPA Sanity Check</h2><div class="counts" id="counts-cipa"></div></div>
-            <div class="section-desc">Minimal spot-check to confirm Linewize is handling CIPA categories as expected. Not a comprehensive content filter test - just a sanity check on the most important categories.</div>
-            <div class="test-list" id="list-cipa"></div>
-        </section>
-
         <section id="section-internal">
-            <div class="section-header"><h2>Internal Infrastructure Reachability</h2><div class="counts" id="counts-internal"></div></div>
-            <div class="section-desc">Tests whether the student Chromebook can reach key internal resources from the browser. Complements the PowerShell network reachability tests with browser-layer visibility.</div>
+            <div class="section-header"><h2>Safe Reachability Tests</h2><div class="counts" id="counts-internal"></div></div>
+            <div class="section-desc">Only tests reachability to URLs that should be allowed - Google Workspace and district resources. These should all be reachable on a working student device.</div>
             <div class="test-list" id="list-internal"></div>
         </section>
 
         <section id="section-manual">
             <div class="section-header"><h2>Manual Verification Checklist</h2><div class="counts" id="counts-manual"></div></div>
-            <div class="section-desc">These checks cannot be automated and require physically interacting with the device. Walk through each one and document the result.</div>
+            <div class="section-desc">These checks cannot be automated and require physically interacting with the device. Walk through each one and document the result. This section contains the highest-value findings.</div>
             <div class="test-list" id="list-manual"></div>
         </section>
 
@@ -350,14 +306,43 @@
         </div>
 
         <footer>
-            ICSD Student Chromebook Audit &mdash; Runs entirely client-side &mdash; No data leaves the browser<br>
-            Designed to complement Linewize content filtering with policy and capability auditing
+            ICSD Student Chromebook Audit &mdash; Linewize-safe edition &mdash; Runs entirely client-side<br>
+            Designed to produce findings without triggering Linewize block redirects
         </footer>
     </div>
 
 <script>
 // ============================================================================
+// STATE PERSISTENCE
+// ============================================================================
+
+const STORAGE_KEY = 'icsd-chromebook-audit-results';
+
+function saveState() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.results));
+    } catch (e) { /* ignore */ }
+}
+
+function loadState() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) return JSON.parse(saved);
+    } catch (e) { /* ignore */ }
+    return {};
+}
+
+function clearState() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+
+// ============================================================================
 // TEST DEFINITIONS
+// All tests are either:
+//   - Purely local (no network requests)
+//   - Only hit Google/district allowlisted URLs
+//   - Manual checks
+// NONE of these should trigger Linewize block redirects.
 // ============================================================================
 
 const TESTS = [
@@ -402,7 +387,7 @@ const TESTS = [
     {
         id: 'fp-cores',
         name: 'CPU cores',
-        detail: 'Logical processor count - helps characterize hardware class',
+        detail: 'Logical processor count',
         section: 'device',
         run: async () => {
             return { status: 'info', result: (navigator.hardwareConcurrency || 'unknown') + ' cores' };
@@ -418,14 +403,33 @@ const TESTS = [
             return { status: 'info', result: mem ? (mem + ' GB') : 'not exposed' };
         }
     },
-
-    // ============ ENTERPRISE MANAGEMENT INDICATORS ============
-
     {
-        id: 'mgmt-navigator',
+        id: 'fp-language',
+        name: 'Language',
+        detail: 'Browser language setting',
+        section: 'device',
+        run: async () => {
+            return { status: 'info', result: navigator.language || 'unknown' };
+        }
+    },
+    {
+        id: 'fp-timezone',
+        name: 'Timezone',
+        detail: 'System timezone',
+        section: 'device',
+        run: async () => {
+            try {
+                return { status: 'info', result: Intl.DateTimeFormat().resolvedOptions().timeZone };
+            } catch (e) {
+                return { status: 'info', result: 'unknown' };
+            }
+        }
+    },
+    {
+        id: 'fp-managed-api',
         name: 'navigator.managed API',
-        detail: 'Chrome exposes navigator.managed on devices under enterprise policy',
-        section: 'management',
+        detail: 'Chrome exposes navigator.managed on devices under enterprise policy (experimental)',
+        section: 'device',
         run: async () => {
             if ('managed' in navigator) {
                 return { status: 'good', result: 'reports managed' };
@@ -433,149 +437,19 @@ const TESTS = [
             return { status: 'info', result: 'API unavailable (not a reliable signal)' };
         }
     },
-    {
-        id: 'mgmt-linewize-reachable',
-        name: 'Linewize backend reachable',
-        detail: 'Confirms the device can talk to Linewize infrastructure for filtering',
-        section: 'management',
-        run: async () => {
-            return await testFetch('https://www.linewize.com/', 'info');
-        }
-    },
-    {
-        id: 'mgmt-linewize-help',
-        name: 'Linewize help endpoint',
-        detail: 'help.linewize.com reachable',
-        section: 'management',
-        run: async () => {
-            return await testFetch('https://help.linewize.com/', 'info');
-        }
-    },
-    {
-        id: 'mgmt-google-admin',
-        name: 'Google Admin console',
-        detail: 'admin.google.com - network-reachable but student auth should be denied',
-        section: 'management',
-        run: async () => {
-            return await testFetch('https://admin.google.com/', 'info');
-        }
-    },
-
-    // ============ CHROME POLICY ENFORCEMENT (INFERRED) ============
-
-    {
-        id: 'policy-clipboard-read',
-        name: 'Clipboard read permission',
-        detail: 'If clipboard.readText() works without permission prompt, data exfiltration from pages is easier',
-        section: 'policies',
-        run: async () => {
-            if (!navigator.clipboard || !navigator.clipboard.readText) {
-                return { status: 'good', result: 'API unavailable' };
-            }
-            try {
-                await navigator.clipboard.readText();
-                return { status: 'warn', result: 'read succeeded without prompt' };
-            } catch (e) {
-                return { status: 'good', result: 'blocked (requires permission)' };
-            }
-        }
-    },
-    {
-        id: 'policy-notifications',
-        name: 'Notifications permission state',
-        detail: 'DefaultNotificationsSetting policy - notifications should be blocked or prompt by default',
-        section: 'policies',
-        run: async () => {
-            if (!('Notification' in window)) {
-                return { status: 'good', result: 'API unavailable' };
-            }
-            const perm = Notification.permission;
-            if (perm === 'granted') return { status: 'warn', result: 'already granted (unusual)' };
-            if (perm === 'denied')  return { status: 'good', result: 'blocked by policy' };
-            return { status: 'info', result: 'default (will prompt)' };
-        }
-    },
-    {
-        id: 'policy-geolocation',
-        name: 'Geolocation permission state',
-        detail: 'Privacy concern - students should not broadcast location to arbitrary sites',
-        section: 'policies',
-        run: async () => {
-            if (!navigator.permissions) return { status: 'info', result: 'permissions API unavailable' };
-            try {
-                const result = await navigator.permissions.query({ name: 'geolocation' });
-                if (result.state === 'denied') return { status: 'good', result: 'blocked by policy' };
-                return { status: 'info', result: result.state };
-            } catch (e) {
-                return { status: 'info', result: 'query failed' };
-            }
-        }
-    },
-    {
-        id: 'policy-cookies',
-        name: 'Cookies enabled',
-        detail: 'BlockThirdPartyCookies policy',
-        section: 'policies',
-        run: async () => {
-            return {
-                status: navigator.cookieEnabled ? 'info' : 'good',
-                result: navigator.cookieEnabled ? 'enabled' : 'blocked'
-            };
-        }
-    },
-    {
-        id: 'policy-popups',
-        name: 'Popup blocker',
-        detail: 'DefaultPopupsSetting policy - popups should be blocked by default',
-        section: 'policies',
-        run: async () => {
-            try {
-                const w = window.open('about:blank', '_blank', 'width=1,height=1');
-                if (w) {
-                    w.close();
-                    return { status: 'warn', result: 'popup allowed' };
-                }
-                return { status: 'good', result: 'popup blocked' };
-            } catch (e) {
-                return { status: 'good', result: 'popup blocked' };
-            }
-        }
-    },
-    {
-        id: 'policy-service-workers',
-        name: 'Service workers enabled',
-        detail: 'Service workers run in background; rarely policy-blocked on student devices',
-        section: 'policies',
-        run: async () => {
-            return { status: 'info', result: ('serviceWorker' in navigator) ? 'available' : 'blocked' };
-        }
-    },
-    {
-        id: 'policy-localstorage',
-        name: 'Local storage writable',
-        detail: 'localStorage access - typically allowed',
-        section: 'policies',
-        run: async () => {
-            try {
-                localStorage.setItem('__icsd_test', '1');
-                localStorage.removeItem('__icsd_test');
-                return { status: 'info', result: 'writable' };
-            } catch (e) {
-                return { status: 'good', result: 'blocked' };
-            }
-        }
-    },
 
     // ============ BROWSER CAPABILITIES & HARDWARE APIS ============
+    // These tests only check for the EXISTENCE of APIs in the browser - they
+    // do not call any methods that would trigger network requests or prompts.
 
     {
         id: 'cap-webusb',
         name: 'WebUSB API',
-        detail: 'WebUsbAllowDevicesForUrls policy. Direct USB device access from webpages',
+        detail: 'WebUsbAllowDevicesForUrls policy - direct USB device access from web pages. Should be blocked on student devices.',
         section: 'capabilities',
         run: async () => {
             if ('usb' in navigator && typeof navigator.usb.getDevices === 'function') {
-                return { status: 'bad', result: 'available (should be blocked)' };
+                return { status: 'bad', result: 'AVAILABLE (should be blocked)' };
             }
             return { status: 'good', result: 'blocked by policy' };
         }
@@ -583,11 +457,11 @@ const TESTS = [
     {
         id: 'cap-webserial',
         name: 'Web Serial API',
-        detail: 'SerialAllowAllPortsForUrls policy. Direct serial port access - can talk to hardware',
+        detail: 'SerialAllowAllPortsForUrls policy - direct serial port access. Should be blocked on student devices.',
         section: 'capabilities',
         run: async () => {
             if ('serial' in navigator && typeof navigator.serial.getPorts === 'function') {
-                return { status: 'bad', result: 'available (should be blocked)' };
+                return { status: 'bad', result: 'AVAILABLE (should be blocked)' };
             }
             return { status: 'good', result: 'blocked by policy' };
         }
@@ -595,11 +469,11 @@ const TESTS = [
     {
         id: 'cap-webhid',
         name: 'WebHID API',
-        detail: 'Direct HID device access - hardware attack surface',
+        detail: 'Direct HID device access - hardware attack surface. Should be blocked on student devices.',
         section: 'capabilities',
         run: async () => {
             if ('hid' in navigator && typeof navigator.hid.getDevices === 'function') {
-                return { status: 'bad', result: 'available (should be blocked)' };
+                return { status: 'bad', result: 'AVAILABLE (should be blocked)' };
             }
             return { status: 'good', result: 'blocked by policy' };
         }
@@ -607,7 +481,7 @@ const TESTS = [
     {
         id: 'cap-bluetooth',
         name: 'Web Bluetooth API',
-        detail: 'DefaultWebBluetoothGuardSetting - pair with Bluetooth from webpages',
+        detail: 'DefaultWebBluetoothGuardSetting - pair with Bluetooth devices from web pages',
         section: 'capabilities',
         run: async () => {
             if ('bluetooth' in navigator && typeof navigator.bluetooth.requestDevice === 'function') {
@@ -619,7 +493,7 @@ const TESTS = [
     {
         id: 'cap-midi',
         name: 'Web MIDI API',
-        detail: 'Low risk but worth noting',
+        detail: 'Access to musical instruments and MIDI controllers',
         section: 'capabilities',
         run: async () => {
             return { status: 'info', result: ('requestMIDIAccess' in navigator) ? 'available' : 'blocked' };
@@ -658,19 +532,152 @@ const TESTS = [
     {
         id: 'cap-wasm',
         name: 'WebAssembly',
-        detail: 'Enables compiled code execution in browser - attack surface',
+        detail: 'Enables compiled code execution in browser',
         section: 'capabilities',
         run: async () => {
             return { status: 'info', result: ('WebAssembly' in window) ? 'enabled' : 'disabled' };
         }
     },
+    {
+        id: 'cap-sharedarraybuffer',
+        name: 'SharedArrayBuffer',
+        detail: 'Enables advanced memory operations and timing attacks',
+        section: 'capabilities',
+        run: async () => {
+            return { status: 'info', result: ('SharedArrayBuffer' in window) ? 'enabled' : 'disabled' };
+        }
+    },
+    {
+        id: 'cap-service-worker',
+        name: 'Service Workers',
+        detail: 'Service workers run in background for offline functionality',
+        section: 'capabilities',
+        run: async () => {
+            return { status: 'info', result: ('serviceWorker' in navigator) ? 'available' : 'blocked' };
+        }
+    },
 
-    // ============ WEBRTC & NETWORK LEAKAGE ============
+    // ============ CHROME POLICY ENFORCEMENT (INFERRED) ============
+
+    {
+        id: 'policy-notifications',
+        name: 'Notifications permission state',
+        detail: 'DefaultNotificationsSetting policy - should be blocked or prompt by default',
+        section: 'policies',
+        run: async () => {
+            if (!('Notification' in window)) return { status: 'good', result: 'API unavailable' };
+            const perm = Notification.permission;
+            if (perm === 'granted') return { status: 'warn', result: 'already granted (unusual)' };
+            if (perm === 'denied')  return { status: 'good', result: 'blocked by policy' };
+            return { status: 'info', result: 'default (will prompt)' };
+        }
+    },
+    {
+        id: 'policy-geolocation',
+        name: 'Geolocation permission state',
+        detail: 'Students should not broadcast location to arbitrary sites',
+        section: 'policies',
+        run: async () => {
+            if (!navigator.permissions) return { status: 'info', result: 'permissions API unavailable' };
+            try {
+                const result = await navigator.permissions.query({ name: 'geolocation' });
+                if (result.state === 'denied') return { status: 'good', result: 'blocked by policy' };
+                return { status: 'info', result: result.state };
+            } catch (e) {
+                return { status: 'info', result: 'query failed' };
+            }
+        }
+    },
+    {
+        id: 'policy-clipboard-read',
+        name: 'Clipboard read permission',
+        detail: 'Should require user permission prompt before reading clipboard',
+        section: 'policies',
+        run: async () => {
+            if (!navigator.clipboard || !navigator.clipboard.readText) {
+                return { status: 'good', result: 'API unavailable' };
+            }
+            // We cannot actually test this without triggering a prompt, so we
+            // check the permission state instead.
+            if (navigator.permissions) {
+                try {
+                    const result = await navigator.permissions.query({ name: 'clipboard-read' });
+                    if (result.state === 'denied') return { status: 'good', result: 'blocked by policy' };
+                    if (result.state === 'granted') return { status: 'warn', result: 'already granted' };
+                    return { status: 'info', result: 'prompt required (good)' };
+                } catch (e) {
+                    return { status: 'info', result: 'permission query failed' };
+                }
+            }
+            return { status: 'info', result: 'API available' };
+        }
+    },
+    {
+        id: 'policy-cookies',
+        name: 'Cookies enabled',
+        detail: 'BlockThirdPartyCookies policy state',
+        section: 'policies',
+        run: async () => {
+            return {
+                status: navigator.cookieEnabled ? 'info' : 'good',
+                result: navigator.cookieEnabled ? 'enabled' : 'blocked'
+            };
+        }
+    },
+    {
+        id: 'policy-popups',
+        name: 'Popup blocker',
+        detail: 'DefaultPopupsSetting policy - popups should be blocked by default',
+        section: 'policies',
+        run: async () => {
+            try {
+                const w = window.open('about:blank', '_blank', 'width=1,height=1');
+                if (w) {
+                    w.close();
+                    return { status: 'warn', result: 'popup allowed' };
+                }
+                return { status: 'good', result: 'popup blocked' };
+            } catch (e) {
+                return { status: 'good', result: 'popup blocked' };
+            }
+        }
+    },
+    {
+        id: 'policy-localstorage',
+        name: 'Local storage writable',
+        detail: 'localStorage access for cookies and session state',
+        section: 'policies',
+        run: async () => {
+            try {
+                localStorage.setItem('__icsd_test', '1');
+                localStorage.removeItem('__icsd_test');
+                return { status: 'info', result: 'writable' };
+            } catch (e) {
+                return { status: 'good', result: 'blocked' };
+            }
+        }
+    },
+    {
+        id: 'policy-indexeddb',
+        name: 'IndexedDB available',
+        detail: 'IndexedDB storage - used by most web apps',
+        section: 'policies',
+        run: async () => {
+            return {
+                status: 'info',
+                result: ('indexedDB' in window) ? 'available' : 'blocked'
+            };
+        }
+    },
+
+    // ============ WEBRTC ============
+    // WebRTC tests use the WebRTC API itself, which is local to the browser.
+    // They do not make HTTP requests that Linewize could intercept.
 
     {
         id: 'webrtc-available',
         name: 'WebRTC available',
-        detail: 'RTCPeerConnection constructor',
+        detail: 'RTCPeerConnection constructor availability',
         section: 'webrtc',
         run: async () => {
             if ('RTCPeerConnection' in window) return { status: 'info', result: 'available' };
@@ -680,12 +687,13 @@ const TESTS = [
     {
         id: 'webrtc-local-ip',
         name: 'Local IP leak via WebRTC',
-        detail: 'WebRtcLocalIpsAllowedUrls policy - if local IPs leak, attackers learn network topology from any page',
+        detail: 'WebRtcLocalIpsAllowedUrls policy - if local IPs leak, attackers learn network topology from any web page',
         section: 'webrtc',
         run: async () => {
             if (!('RTCPeerConnection' in window)) return { status: 'good', result: 'WebRTC blocked' };
             return new Promise((resolve) => {
                 try {
+                    // iceServers: [] - no external servers, local only
                     const pc = new RTCPeerConnection({ iceServers: [] });
                     pc.createDataChannel('');
                     pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => {});
@@ -713,318 +721,127 @@ const TESTS = [
             });
         }
     },
-    {
-        id: 'webrtc-stun-external',
-        name: 'External STUN reachable',
-        detail: 'Can WebRTC reach public STUN? Needed for P2P tunneling bypass',
-        section: 'webrtc',
-        run: async () => {
-            if (!('RTCPeerConnection' in window)) return { status: 'good', result: 'WebRTC blocked' };
-            return new Promise((resolve) => {
-                try {
-                    const pc = new RTCPeerConnection({
-                        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-                    });
-                    pc.createDataChannel('');
-                    pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => {});
-                    let gotSrflx = false;
-                    setTimeout(() => {
-                        pc.close();
-                        resolve({
-                            status: gotSrflx ? 'warn' : 'good',
-                            result: gotSrflx ? 'STUN reachable (P2P possible)' : 'no STUN response'
-                        });
-                    }, 3000);
-                    pc.onicecandidate = (e) => {
-                        if (e.candidate && e.candidate.candidate && /srflx/.test(e.candidate.candidate)) {
-                            gotSrflx = true;
-                        }
-                    };
-                } catch (e) {
-                    resolve({ status: 'info', result: 'test failed' });
-                }
-            });
-        }
-    },
 
-    // ============ FILTER BYPASS METHODS ============
+    // ============ SAFE REACHABILITY TESTS ============
+    // These only test URLs that should ALWAYS be allowed on a student device.
+    // If they fail, something is wrong with basic connectivity, not a Linewize block.
+    // Uses image-loading to avoid any fetch hooks.
 
     {
-        id: 'bypass-doh-cloudflare',
-        name: 'Cloudflare DoH endpoint',
-        detail: 'If reachable AND Chrome DoH policy is not locked, students can switch to Cloudflare DNS and bypass Linewize DNS visibility',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://cloudflare-dns.com/dns-query?name=example.com&type=A', 'bad', {
-                Accept: 'application/dns-json'
-            });
-        }
-    },
-    {
-        id: 'bypass-doh-google',
-        name: 'Google DoH endpoint',
-        detail: 'dns.google resolver - another bypass target',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://dns.google/resolve?name=example.com&type=A', 'bad');
-        }
-    },
-    {
-        id: 'bypass-doh-quad9',
-        name: 'Quad9 DoH endpoint',
-        detail: 'Another public DoH provider',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://dns.quad9.net/dns-query?name=example.com', 'bad', {
-                Accept: 'application/dns-json'
-            });
-        }
-    },
-    {
-        id: 'bypass-doh-nextdns',
-        name: 'NextDNS reachable',
-        detail: 'NextDNS is a popular privacy-focused DoH provider students use',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://dns.nextdns.io/', 'bad');
-        }
-    },
-    {
-        id: 'bypass-google-translate',
-        name: 'Google Translate proxy',
-        detail: 'Documented bypass - translate.google.com can load blocked pages since Google is rarely blocked',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://translate.google.com/', 'warn');
-        }
-    },
-    {
-        id: 'bypass-google-cache',
-        name: 'Google cached pages',
-        detail: 'webcache.googleusercontent.com - cached versions of pages',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://webcache.googleusercontent.com/', 'warn');
-        }
-    },
-    {
-        id: 'bypass-wayback',
-        name: 'Wayback Machine',
-        detail: 'Archived pages via web.archive.org can bypass filtering',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://web.archive.org/', 'warn');
-        }
-    },
-    {
-        id: 'bypass-github-raw',
-        name: 'GitHub raw content',
-        detail: 'raw.githubusercontent.com - hosts unpacked extensions for sideloading (Linewize explicitly calls this out as a bypass vector)',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://raw.githubusercontent.com/', 'warn');
-        }
-    },
-    {
-        id: 'bypass-chrome-webstore',
-        name: 'Chrome Web Store',
-        detail: 'Students can browse the Web Store even if they cannot install from it',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://chromewebstore.google.com/', 'info');
-        }
-    },
-
-    // ============ MONITORING & CLASSROOM TOOLS ============
-
-    {
-        id: 'monitoring-linewize',
-        name: 'Linewize Connect extension',
-        detail: 'Tries to detect the Linewize Connect extension via known extension IDs',
-        section: 'monitoring',
-        run: async () => {
-            // Note: chrome-extension:// fetches from a page will typically fail with "Failed to fetch"
-            // regardless of whether the extension exists - we can't reliably detect extensions this way.
-            // The most reliable manual check is chrome://extensions.
-            return { status: 'info', result: 'verify via chrome://extensions manually' };
-        }
-    },
-    {
-        id: 'monitoring-classwize',
-        name: 'Classwize presence',
-        detail: 'Linewize Classwize is the classroom teacher control tool',
-        section: 'monitoring',
-        run: async () => {
-            return { status: 'info', result: 'verify via chrome://extensions manually' };
-        }
-    },
-    {
-        id: 'monitoring-goguardian',
-        name: 'GoGuardian presence',
-        detail: 'Alternative classroom monitoring tool',
-        section: 'monitoring',
-        run: async () => {
-            return { status: 'info', result: 'verify via chrome://extensions manually' };
-        }
-    },
-
-    // ============ CIPA SANITY CHECK ============
-
-    {
-        id: 'cipa-adult',
-        name: 'Adult content category',
-        detail: 'Sanity check - Pornhub should definitely be blocked. Any failure here is a CIPA compliance issue.',
-        section: 'cipa',
-        run: async () => {
-            // Use the cipa version of testFetch that reports "reachable" as bad
-            return await testFetchCipa('https://www.pornhub.com/');
-        }
-    },
-    {
-        id: 'cipa-gambling',
-        name: 'Gambling category',
-        detail: 'CIPA requires blocking gambling - bet365 as a representative sample',
-        section: 'cipa',
-        run: async () => {
-            return await testFetchCipa('https://www.bet365.com/');
-        }
-    },
-    {
-        id: 'cipa-piracy',
-        name: 'Piracy category',
-        detail: 'Piracy sites should be blocked - thepiratebay.org as a representative sample',
-        section: 'cipa',
-        run: async () => {
-            return await testFetchCipa('https://thepiratebay.org/');
-        }
-    },
-    {
-        id: 'cipa-anonymizer',
-        name: 'Anonymizer category',
-        detail: 'Proxy services must be blocked - CroxyProxy is the most common student-facing anonymizer',
-        section: 'cipa',
-        run: async () => {
-            return await testFetchCipa('https://www.croxyproxy.com/');
-        }
-    },
-    {
-        id: 'cipa-weapons',
-        name: 'Weapons category',
-        detail: 'Weapons retailer (guns.com) - typically blocked in K-12',
-        section: 'cipa',
-        run: async () => {
-            return await testFetchCipa('https://www.guns.com/');
-        }
-    },
-
-    // ============ INTERNAL INFRASTRUCTURE ============
-
-    {
-        id: 'internal-icsd',
-        name: 'ICSD public website',
-        detail: 'District main site - should load',
-        section: 'internal',
-        run: async () => {
-            return await testFetch('https://www.icsd.k12.ny.us/', 'info');
-        }
-    },
-    {
-        id: 'internal-classroom',
+        id: 'reach-classroom',
         name: 'Google Classroom',
-        detail: 'Core student educational tool - must load',
+        detail: 'Core student educational tool - must be reachable',
         section: 'internal',
         run: async () => {
-            return await testFetch('https://classroom.google.com/', 'info');
+            return await testSafeReachability('https://classroom.google.com/favicon.ico');
         }
     },
     {
-        id: 'internal-drive',
+        id: 'reach-drive',
         name: 'Google Drive',
-        detail: 'Core student storage - must load',
+        detail: 'Core student storage - must be reachable',
         section: 'internal',
         run: async () => {
-            return await testFetch('https://drive.google.com/', 'info');
+            return await testSafeReachability('https://drive.google.com/favicon.ico');
         }
     },
     {
-        id: 'internal-mail',
+        id: 'reach-gmail',
         name: 'Gmail (Workspace)',
-        detail: 'Student email - must load',
+        detail: 'Student email - must be reachable',
         section: 'internal',
         run: async () => {
-            return await testFetch('https://mail.google.com/', 'info');
+            return await testSafeReachability('https://mail.google.com/favicon.ico');
+        }
+    },
+    {
+        id: 'reach-gstatic',
+        name: 'Google static content',
+        detail: 'gstatic.com - foundational CDN, must work',
+        section: 'internal',
+        run: async () => {
+            return await testSafeReachability('https://www.gstatic.com/generate_204');
         }
     },
 
     // ============ MANUAL VERIFICATION ============
+    // These are where the REAL findings come from. The automated tests above
+    // rule things in or out; the manual checks are where gaps get discovered.
 
     {
-        id: 'manual-developer-mode',
-        name: 'Developer mode blocked',
-        detail: 'Power off, then hold Esc+Refresh and press Power. Press Ctrl+D. Should show "managed device" message, not offer to enter dev mode.',
+        id: 'manual-chrome-policy',
+        name: 'chrome://policy inspection',
+        detail: 'Navigate to chrome://policy in a new tab. Shows all applied enterprise policies. SCREENSHOT THIS. Look for: DeveloperToolsAvailability, IncognitoModeAvailability, ExtensionInstallSources, DnsOverHttpsMode, WebUsbAllowDevicesForUrls, WebRtcLocalIpsAllowedUrls. Any that are missing are potential gaps.',
         section: 'manual',
-        run: async () => { return { status: 'manual', result: 'physical check required' }; }
+        run: async () => { return { status: 'manual', result: 'open chrome://policy' }; }
+    },
+    {
+        id: 'manual-chrome-management',
+        name: 'chrome://management inspection',
+        detail: 'Navigate to chrome://management. Shows the managing entity and listed monitoring capabilities. Screenshot this.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'open chrome://management' }; }
+    },
+    {
+        id: 'manual-chrome-extensions',
+        name: 'chrome://extensions inspection',
+        detail: 'Navigate to chrome://extensions. List which extensions are force-installed. Look specifically for Linewize Connect and Classwize. Screenshot.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'open chrome://extensions' }; }
+    },
+    {
+        id: 'manual-secure-dns',
+        name: 'Chrome Secure DNS setting locked',
+        detail: 'Settings > Privacy and security > Use secure DNS. THIS IS THE BIG ONE - if the toggle can be changed from default to a custom DNS provider, students can enable DoH and bypass Linewize DNS visibility. Should be locked (greyed out) by DnsOverHttpsMode policy.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'check Settings > Privacy' }; }
+    },
+    {
+        id: 'manual-developer-mode',
+        name: 'Developer mode blocked at boot',
+        detail: 'Power off, then hold Esc+Refresh and press Power. Press Ctrl+D. Should show "managed device" message, NOT offer to enter dev mode. If this works, critical gap.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'physical boot-time check' }; }
     },
     {
         id: 'manual-powerwash',
         name: 'Powerwash forces re-enrollment',
-        detail: 'Ctrl+Alt+Shift+R from login screen. After wipe, device should re-enroll to district policies automatically.',
+        detail: 'Ctrl+Alt+Shift+R from login screen to initiate Powerwash. After wipe, device should re-enroll to district policies automatically on first boot.',
         section: 'manual',
         run: async () => { return { status: 'manual', result: 'test with spare device' }; }
     },
     {
         id: 'manual-guest-mode',
-        name: 'Guest mode disabled',
-        detail: 'At login screen, look for "Browse as Guest". Should NOT be present on student devices.',
+        name: 'Guest mode disabled at login',
+        detail: 'At login screen, look for "Browse as Guest" option. Should NOT be present on student devices.',
         section: 'manual',
         run: async () => { return { status: 'manual', result: 'check login screen' }; }
     },
     {
         id: 'manual-personal-login',
         name: 'Personal Google account blocked',
-        detail: 'Try entering a personal @gmail.com at login. Should be rejected with "restricted to your organization" message.',
+        detail: 'At login, try entering a personal @gmail.com account. Should be rejected with "restricted to your organization" message.',
         section: 'manual',
         run: async () => { return { status: 'manual', result: 'test at login screen' }; }
     },
     {
-        id: 'manual-chrome-policy',
-        name: 'chrome://policy inspection',
-        detail: 'Navigate to chrome://policy. Shows all applied enterprise policies. Screenshot this for documentation. Look for: DeveloperToolsAvailability, IncognitoModeAvailability, ExtensionInstallSources, DnsOverHttpsMode, WebUsbAllowDevicesForUrls.',
-        section: 'manual',
-        run: async () => { return { status: 'manual', result: 'navigate to chrome://policy' }; }
-    },
-    {
-        id: 'manual-chrome-management',
-        name: 'chrome://management inspection',
-        detail: 'Navigate to chrome://management. Shows managing entity and listed monitoring capabilities. Screenshot this.',
-        section: 'manual',
-        run: async () => { return { status: 'manual', result: 'navigate to chrome://management' }; }
-    },
-    {
-        id: 'manual-chrome-extensions',
-        name: 'chrome://extensions inspection',
-        detail: 'Navigate to chrome://extensions. List which extensions are force-installed. Look for Linewize Connect specifically. Screenshot.',
-        section: 'manual',
-        run: async () => { return { status: 'manual', result: 'navigate to chrome://extensions' }; }
-    },
-    {
-        id: 'manual-install-extension',
+        id: 'manual-extension-install',
         name: 'Extension installation blocked',
-        detail: 'Try to install any extension from the Chrome Web Store. Should be blocked unless on allowlist.',
+        detail: 'Browse to Chrome Web Store and try to install any extension. Should be blocked unless on allowlist.',
         section: 'manual',
         run: async () => { return { status: 'manual', result: 'try Chrome Web Store' }; }
     },
     {
         id: 'manual-devtools',
         name: 'DevTools availability',
-        detail: 'Press F12 or Ctrl+Shift+I. If DevTools opens, student can inspect/modify pages and potentially interfere with filter extension.',
+        detail: 'Press F12 or Ctrl+Shift+I. If DevTools opens, student can inspect/modify pages and potentially interfere with filter extension. Check DeveloperToolsAvailability policy.',
         section: 'manual',
         run: async () => { return { status: 'manual', result: 'press F12' }; }
     },
     {
         id: 'manual-crosh',
         name: 'Crosh terminal access',
-        detail: 'Press Ctrl+Alt+T. Type "help" then "shell". If shell opens, student has limited shell access.',
+        detail: 'Press Ctrl+Alt+T to open Crosh. Try typing "shell" and pressing enter. If a shell opens, student has limited command-line access.',
         section: 'manual',
         run: async () => { return { status: 'manual', result: 'Ctrl+Alt+T then "shell"' }; }
     },
@@ -1033,122 +850,114 @@ const TESTS = [
         name: 'Linux (Crostini) disabled',
         detail: 'Settings > About ChromeOS > Developers > Linux development environment. Should be unavailable for students.',
         section: 'manual',
-        run: async () => { return { status: 'manual', result: 'check Settings' }; }
+        run: async () => { return { status: 'manual', result: 'check Settings > About' }; }
     },
     {
-        id: 'manual-secure-dns',
-        name: 'Chrome Secure DNS setting locked',
-        detail: 'Settings > Privacy and security > Use secure DNS. If the toggle can be changed from default to custom, student can switch to Cloudflare/Google DoH and bypass Linewize DNS visibility. Should be locked by DnsOverHttpsMode policy.',
+        id: 'manual-play-store',
+        name: 'Play Store / Android apps',
+        detail: 'Check whether Google Play Store is in the launcher. Ability to install arbitrary Android apps is a significant capability increase for a student device.',
         section: 'manual',
-        run: async () => { return { status: 'manual', result: 'check Settings > Privacy' }; }
+        run: async () => { return { status: 'manual', result: 'check launcher' }; }
+    },
+    {
+        id: 'manual-usb-storage',
+        name: 'USB storage allowed',
+        detail: 'Plug in a USB flash drive. Does it mount in Files? Can you read/write? Policy varies by district - check against intended policy.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'physical USB test' }; }
     },
     {
         id: 'manual-proxy-settings',
         name: 'Network proxy settings locked',
-        detail: 'Settings > Network > [WiFi] > Proxy. If student can set manual proxy, they can route traffic anywhere.',
+        detail: 'Settings > Network > [WiFi network] > Proxy. If student can change proxy settings, they can route traffic through any server they want - complete content filter bypass.',
         section: 'manual',
         run: async () => { return { status: 'manual', result: 'check network settings' }; }
     },
     {
         id: 'manual-incognito',
-        name: 'Incognito mode + extensions',
-        detail: 'Press Ctrl+Shift+N. If incognito opens, test whether Linewize Connect still works in that mode. Extensions often do not run in incognito by default unless explicitly enabled.',
+        name: 'Incognito + extensions',
+        detail: 'Press Ctrl+Shift+N. If incognito opens, test whether Linewize Connect still works there. Extensions often do not run in incognito by default unless explicitly enabled.',
         section: 'manual',
         run: async () => { return { status: 'manual', result: 'test with Ctrl+Shift+N' }; }
     },
     {
-        id: 'manual-usb-storage',
-        name: 'USB storage policy',
-        detail: 'Plug in a USB drive. Does it mount? Read/write? Policy varies by district.',
-        section: 'manual',
-        run: async () => { return { status: 'manual', result: 'physical USB test' }; }
-    },
-    {
-        id: 'manual-android-apps',
-        name: 'Play Store / Android apps',
-        detail: 'Check whether Google Play Store is available. Ability to install arbitrary Android apps is a significant capability increase.',
-        section: 'manual',
-        run: async () => { return { status: 'manual', result: 'check launcher' }; }
-    },
-    {
         id: 'manual-print-to-pdf',
         name: 'Print to PDF bypass',
-        detail: 'Ctrl+P and choose "Save as PDF". If any blocked page can be rendered to PDF, content can leave the filter. Documented Linewize bypass vector.',
+        detail: 'Ctrl+P and choose "Save as PDF". If any blocked page can be rendered to PDF for download, content can leave the filter. Documented Linewize bypass vector.',
         section: 'manual',
         run: async () => { return { status: 'manual', result: 'test with Ctrl+P' }; }
+    },
+    {
+        id: 'manual-chromebook-hardware',
+        name: 'Chromebook hardware model',
+        detail: 'Settings > About ChromeOS. Note the model name, serial number, and auto-update expiration (AUE) date. Document hardware model for support purposes.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'check Settings > About' }; }
     },
 ];
 
 // ============================================================================
-// TEST HARNESS
+// SAFE REACHABILITY TEST
+// Uses image loading to test reachability without risking Linewize redirects.
+// Only called with URLs that should already be allowlisted (Google services,
+// district resources). Never call this with URLs that might be blocked.
 // ============================================================================
 
-async function testFetch(url, expectedStatus, headers) {
-    if (!headers) headers = {};
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
-    const start = Date.now();
-    try {
-        await fetch(url, {
-            method: 'GET',
-            mode: 'no-cors',
-            cache: 'no-store',
-            headers: headers,
-            signal: controller.signal,
-            credentials: 'omit'
-        });
-        clearTimeout(timeout);
-        const ms = Date.now() - start;
-        return { status: expectedStatus || 'info', result: 'reachable (' + ms + 'ms)' };
-    } catch (e) {
-        clearTimeout(timeout);
-        return { status: 'good', result: e.name === 'AbortError' ? 'timeout/blocked' : 'blocked' };
-    }
-}
+function testSafeReachability(url) {
+    return new Promise((resolve) => {
+        const start = Date.now();
+        const img = new Image();
+        let done = false;
 
-// For CIPA category tests: "reachable" is bad (filter missed it), "blocked" is good (filter working)
-async function testFetchCipa(url) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
-    const start = Date.now();
-    try {
-        await fetch(url, {
-            method: 'GET',
-            mode: 'no-cors',
-            cache: 'no-store',
-            signal: controller.signal,
-            credentials: 'omit'
-        });
-        clearTimeout(timeout);
-        const ms = Date.now() - start;
-        return { status: 'bad', result: 'reachable (' + ms + 'ms) - filter gap?' };
-    } catch (e) {
-        clearTimeout(timeout);
-        return { status: 'good', result: 'blocked (filter working)' };
-    }
+        const finish = (status, result) => {
+            if (done) return;
+            done = true;
+            try { img.src = ''; } catch (e) {}
+            resolve({ status: status, result: result });
+        };
+
+        const timer = setTimeout(() => {
+            finish('warn', 'timeout (connectivity issue?)');
+        }, 5000);
+
+        img.onload = () => {
+            clearTimeout(timer);
+            const ms = Date.now() - start;
+            finish('good', 'reachable (' + ms + 'ms)');
+        };
+
+        img.onerror = () => {
+            clearTimeout(timer);
+            const ms = Date.now() - start;
+            // For favicon/204 URLs, even an error usually means the server responded
+            // (just with something that isn't a valid image). Only consider it blocked
+            // if it failed very quickly.
+            if (ms < 100) {
+                finish('bad', 'fast fail - unreachable');
+            } else {
+                finish('good', 'responded (' + ms + 'ms)');
+            }
+        };
+
+        const sep = url.indexOf('?') >= 0 ? '&' : '?';
+        img.src = url + sep + '_t=' + Date.now();
+    });
 }
 
 // ============================================================================
 // UI
 // ============================================================================
 
-const state = { results: {}, running: false };
+const state = { results: loadState(), running: false };
 
-const SECTIONS = [
-    'device', 'management', 'policies', 'capabilities',
-    'webrtc', 'bypass', 'monitoring', 'cipa', 'internal', 'manual'
-];
+const SECTIONS = ['device', 'capabilities', 'policies', 'webrtc', 'internal', 'manual'];
 
 const SECTION_NAMES = {
     'device': 'DEVICE & BROWSER FINGERPRINT',
-    'management': 'ENTERPRISE MANAGEMENT INDICATORS',
-    'policies': 'CHROME POLICY ENFORCEMENT (INFERRED)',
     'capabilities': 'BROWSER CAPABILITIES & HARDWARE APIS',
+    'policies': 'CHROME POLICY ENFORCEMENT (INFERRED)',
     'webrtc': 'WEBRTC & NETWORK LEAKAGE',
-    'bypass': 'FILTER BYPASS METHODS',
-    'monitoring': 'MONITORING & CLASSROOM TOOLS',
-    'cipa': 'CIPA SANITY CHECK',
-    'internal': 'INTERNAL INFRASTRUCTURE REACHABILITY',
+    'internal': 'SAFE REACHABILITY TESTS',
     'manual': 'MANUAL VERIFICATION CHECKLIST'
 };
 
@@ -1229,9 +1038,9 @@ async function runAllTests() {
     if (state.running) return;
     state.running = true;
     document.getElementById('run-all').disabled = true;
-    state.results = {};
     renderTestRows();
-    const batchSize = 4;
+
+    const batchSize = 3;
     const testsToRun = TESTS.filter(t => t.section !== 'manual');
     for (let i = 0; i < testsToRun.length; i += batchSize) {
         const batch = testsToRun.slice(i, i + batchSize);
@@ -1241,26 +1050,33 @@ async function runAllTests() {
                 const result = await test.run();
                 state.results[test.id] = result;
                 updateTestRow(test, result);
+                saveState();
             } catch (e) {
                 const result = { status: 'warn', result: 'error: ' + (e.message || 'unknown') };
                 state.results[test.id] = result;
                 updateTestRow(test, result);
+                saveState();
             }
             updateCounts();
         }));
     }
-    // Manual tests show placeholder state
+
     for (const test of TESTS.filter(t => t.section === 'manual')) {
-        state.results[test.id] = await test.run();
+        if (!state.results[test.id]) {
+            state.results[test.id] = await test.run();
+        }
         updateTestRow(test, state.results[test.id]);
     }
+    saveState();
     updateCounts();
+
     state.running = false;
     document.getElementById('run-all').disabled = false;
 }
 
 function resetTests() {
     state.results = {};
+    clearState();
     renderTestRows();
     document.getElementById('export-output').value = '';
 }
@@ -1311,12 +1127,12 @@ function exportReport() {
     lines.push('NOTES');
     lines.push('='.repeat(70));
     lines.push('- This tool focuses on gaps that CONTENT FILTERING cannot close.');
-    lines.push('- Linewize handles URL/category-based blocking well. These tests check');
-    lines.push('  things Linewize cannot see: hardware APIs, policy enforcement, WebRTC.');
-    lines.push('- Reachability tests use mode: no-cors. "Reachable" means the browser got');
-    lines.push('  a response but cannot read the content. The response may be a Linewize');
-    lines.push('  block page - manually visit "reachable" URLs to see actual behavior.');
-    lines.push('- Status "manual" requires physical interaction with the device.');
+    lines.push('- Linewize handles URL/category blocking well. These tests check');
+    lines.push('  things Linewize cannot see: hardware APIs, Chrome policies, WebRTC.');
+    lines.push('- Content filter effectiveness is verified separately in the Linewize');
+    lines.push('  dashboard, not by this tool.');
+    lines.push('- The manual checks at the bottom are where the highest-value findings');
+    lines.push('  typically come from. Do not skip them.');
 
     document.getElementById('export-output').value = lines.join('\n');
     document.getElementById('export-output').select();
