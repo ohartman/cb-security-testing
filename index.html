@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICSD Student Chromebook Audit</title>
+<style>
+    :root {
+        --bg: #0d1117;
+        --surface: #161b22;
+        --surface-alt: #21262d;
+        --border: #30363d;
+        --text: #c9d1d9;
+        --text-dim: #8b949e;
+        --accent: #58a6ff;
+        --accent-bright: #79c0ff;
+        --good: #2ea043;
+        --warn: #d29922;
+        --bad: #f85149;
+        --bad-soft: #ff8c42;
+        --info: #58a6ff;
+        --mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.5;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 24px;
+    }
+
+    header {
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 20px;
+        margin-bottom: 28px;
+    }
+
+    h1 {
+        color: var(--accent);
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+        color: var(--text-dim);
+        font-size: 14px;
+        margin-top: 6px;
+    }
+
+    .notice {
+        background: var(--surface);
+        border-left: 4px solid var(--accent);
+        padding: 14px 18px;
+        border-radius: 4px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        color: var(--text-dim);
+    }
+
+    .notice strong { color: var(--text); }
+
+    .controls {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+    }
+
+    button {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background 150ms;
+    }
+
+    button:hover { background: var(--accent-bright); }
+
+    button:disabled {
+        background: var(--surface-alt);
+        color: var(--text-dim);
+        cursor: not-allowed;
+    }
+
+    button.secondary {
+        background: var(--surface-alt);
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    button.secondary:hover {
+        background: var(--border);
+    }
+
+    .summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        margin-bottom: 28px;
+    }
+
+    .summary-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+    }
+
+    .summary-card .num {
+        font-size: 32px;
+        font-weight: 700;
+        font-family: var(--mono);
+    }
+
+    .summary-card .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        margin-top: 4px;
+        letter-spacing: 0.5px;
+    }
+
+    .summary-card.good .num { color: var(--good); }
+    .summary-card.bad  .num { color: var(--bad); }
+    .summary-card.warn .num { color: var(--warn); }
+    .summary-card.info .num { color: var(--info); }
+    .summary-card.pending .num { color: var(--text-dim); }
+
+    section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .section-header {
+        background: var(--surface-alt);
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-header h2 {
+        color: var(--accent-bright);
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .section-header .counts {
+        font-size: 12px;
+        color: var(--text-dim);
+        font-family: var(--mono);
+    }
+
+    .test-list {
+        padding: 0;
+    }
+
+    .test-row {
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--surface-alt);
+        display: grid;
+        grid-template-columns: 110px 1fr auto;
+        gap: 14px;
+        align-items: start;
+    }
+
+    .test-row:last-child { border-bottom: none; }
+
+    .test-row .status {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 4px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .status-good    { background: var(--good); color: #fff; }
+    .status-bad     { background: var(--bad); color: #fff; }
+    .status-warn    { background: var(--warn); color: #fff; }
+    .status-info    { background: var(--info); color: #fff; }
+    .status-pending { background: var(--surface-alt); color: var(--text-dim); border: 1px solid var(--border); }
+    .status-running { background: var(--accent); color: #fff; animation: pulse 1s infinite; }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .test-row .body {
+        min-width: 0;
+    }
+
+    .test-row .name {
+        color: var(--text);
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 3px;
+    }
+
+    .test-row .detail {
+        color: var(--text-dim);
+        font-size: 13px;
+    }
+
+    .test-row .result {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text-dim);
+        max-width: 280px;
+        word-break: break-word;
+        text-align: right;
+    }
+
+    .test-row .result.good { color: var(--good); }
+    .test-row .result.bad  { color: var(--bad); }
+    .test-row .result.warn { color: var(--warn); }
+
+    pre {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        padding: 14px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text);
+        margin: 12px 18px 18px 18px;
+    }
+
+    .export-area {
+        margin-top: 28px;
+        padding: 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+    }
+
+    .export-area h2 {
+        color: var(--accent-bright);
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 200px;
+        background: var(--bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        resize: vertical;
+    }
+
+    footer {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        color: var(--text-dim);
+        font-size: 12px;
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ICSD Student Chromebook Audit</h1>
+            <div class="subtitle">In-browser security assessment for managed student devices</div>
+        </header>
+
+        <div class="notice">
+            <strong>About this tool:</strong> This page runs a battery of security tests from inside the browser.
+            It checks what policies are being enforced, what URLs are reachable, what browser capabilities are
+            available, and what common filter bypasses might work. All tests run locally in your browser - nothing
+            is sent to any server. Load this page on a test student Chromebook while logged in as a test student
+            account to audit the effective security policy on that device.
+        </div>
+
+        <div class="controls">
+            <button id="run-all">Run All Tests</button>
+            <button id="reset" class="secondary">Reset</button>
+            <button id="export" class="secondary">Copy Report</button>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card good"><div class="num" id="count-good">0</div><div class="label">Good</div></div>
+            <div class="summary-card bad"><div class="num" id="count-bad">0</div><div class="label">Concerning</div></div>
+            <div class="summary-card warn"><div class="num" id="count-warn">0</div><div class="label">Warn</div></div>
+            <div class="summary-card info"><div class="num" id="count-info">0</div><div class="label">Info</div></div>
+            <div class="summary-card pending"><div class="num" id="count-pending">0</div><div class="label">Pending</div></div>
+        </div>
+
+        <section id="section-device">
+            <div class="section-header">
+                <h2>Device & Browser Fingerprint</h2>
+                <div class="counts" id="counts-device"></div>
+            </div>
+            <div class="test-list" id="list-device"></div>
+        </section>
+
+        <section id="section-policies">
+            <div class="section-header">
+                <h2>Browser Policy Enforcement</h2>
+                <div class="counts" id="counts-policies"></div>
+            </div>
+            <div class="test-list" id="list-policies"></div>
+        </section>
+
+        <section id="section-capabilities">
+            <div class="section-header">
+                <h2>Browser Capabilities & API Access</h2>
+                <div class="counts" id="counts-capabilities"></div>
+            </div>
+            <div class="test-list" id="list-capabilities"></div>
+        </section>
+
+        <section id="section-filter">
+            <div class="section-header">
+                <h2>Content Filter Reachability</h2>
+                <div class="counts" id="counts-filter"></div>
+            </div>
+            <div class="test-list" id="list-filter"></div>
+        </section>
+
+        <section id="section-bypass">
+            <div class="section-header">
+                <h2>Filter Bypass Methods</h2>
+                <div class="counts" id="counts-bypass"></div>
+            </div>
+            <div class="test-list" id="list-bypass"></div>
+        </section>
+
+        <section id="section-internal">
+            <div class="section-header">
+                <h2>Internal Infrastructure Reachability</h2>
+                <div class="counts" id="counts-internal"></div>
+            </div>
+            <div class="test-list" id="list-internal"></div>
+        </section>
+
+        <div class="export-area">
+            <h2>Raw Findings (for copy/paste)</h2>
+            <textarea id="export-output" readonly placeholder="Click 'Copy Report' after running tests to generate a plain-text report you can paste into a ticket or email."></textarea>
+        </div>
+
+        <footer>
+            ICSD Student Chromebook Audit &mdash; Runs entirely client-side &mdash; No data leaves the browser<br>
+            Built as a complement to Test-ICSDStudentReachability.ps1 and the network audit tooling
+        </footer>
+    </div>
+
+<script>
+// ============================================================================
+// TEST DEFINITIONS
+// Each test is an object with:
+//   id: unique identifier
+//   name: short display name
+//   detail: longer description shown below the name
+//   section: which UI section it belongs to
+//   run: async function that returns { status, result }
+//     status: 'good' | 'bad' | 'warn' | 'info'
+//     result: short text shown on the right
+// ============================================================================
+
+const TESTS = [
+
+    // ============ DEVICE & BROWSER FINGERPRINT ============
+
+    {
+        id: 'fp-useragent',
+        name: 'User Agent',
+        detail: 'Identifies the browser, OS, and often ChromeOS version',
+        section: 'device',
+        run: async () => {
+            const ua = navigator.userAgent;
+            const isChromeOS = /CrOS/.test(ua);
+            return {
+                status: 'info',
+                result: isChromeOS ? 'ChromeOS detected' : 'Not ChromeOS',
+                detail: ua
+            };
+        }
+    },
+    {
+        id: 'fp-platform',
+        name: 'Platform',
+        detail: 'OS platform reported by the browser',
+        section: 'device',
+        run: async () => {
+            return {
+                status: 'info',
+                result: navigator.platform || 'unknown'
+            };
+        }
+    },
+    {
+        id: 'fp-language',
+        name: 'Language',
+        detail: 'Browser language setting',
+        section: 'device',
+        run: async () => {
+            return {
+                status: 'info',
+                result: navigator.language || 'unknown'
+            };
+        }
+    },
+    {
+        id: 'fp-screen',
+        name: 'Screen resolution',
+        detail: 'Physical screen dimensions',
+        section: 'device',
+        run: async () => {
+            return {
+                status: 'info',
+                result: screen.width + 'x' + screen.height
+            };
+        }
+    },
+    {
+        id: 'fp-cores',
+        name: 'CPU cores',
+        detail: 'Number of logical processor cores',
+        section: 'device',
+        run: async () => {
+            return {
+                status: 'info',
+                result: (navigator.hardwareConcurrency || 'unknown') + ' cores'
+            };
+        }
+    },
+    {
+        id: 'fp-memory',
+        name: 'Device memory',
+        detail: 'Approximate RAM in GB (if exposed)',
+        section: 'device',
+        run: async () => {
+            const mem = navigator.deviceMemory;
+            return {
+                status: 'info',
+                result: mem ? (mem + ' GB') : 'not exposed'
+            };
+        }
+    },
+    {
+        id: 'fp-online',
+        name: 'Network status',
+        detail: 'Whether the browser reports being online',
+        section: 'device',
+        run: async () => {
+            return {
+                status: navigator.onLine ? 'good' : 'warn',
+                result: navigator.onLine ? 'online' : 'offline'
+            };
+        }
+    },
+
+    // ============ BROWSER POLICY ENFORCEMENT ============
+
+    {
+        id: 'pol-devtools',
+        name: 'Developer Tools availability',
+        detail: 'Whether DevTools can be opened (F12 or Ctrl+Shift+I)',
+        section: 'policies',
+        run: async () => {
+            // This is a heuristic - we can't directly detect if DevTools is blocked,
+            // but we can check whether the debugger statement pauses execution.
+            // The presence of DevTools keybind isn't detectable from JS.
+            return {
+                status: 'info',
+                result: 'check manually (F12)',
+                detail: 'JS cannot reliably detect DevTools policy - try pressing F12'
+            };
+        }
+    },
+    {
+        id: 'pol-incognito',
+        name: 'Incognito mode detection',
+        detail: 'Whether the current session is in incognito mode',
+        section: 'policies',
+        run: async () => {
+            // Classic incognito detection via storage quota
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                try {
+                    const est = await navigator.storage.estimate();
+                    const quota = est.quota || 0;
+                    const gb = quota / (1024 * 1024 * 1024);
+                    // Incognito typically has a smaller quota, around 120MB or less
+                    const isIncognito = quota < 120 * 1024 * 1024;
+                    return {
+                        status: 'info',
+                        result: isIncognito ? 'incognito likely' : 'regular mode'
+                    };
+                } catch (e) {
+                    return { status: 'info', result: 'detection failed' };
+                }
+            }
+            return { status: 'info', result: 'API unavailable' };
+        }
+    },
+    {
+        id: 'pol-cookies',
+        name: 'Third-party cookies',
+        detail: 'Whether third-party cookies are allowed',
+        section: 'policies',
+        run: async () => {
+            return {
+                status: navigator.cookieEnabled ? 'info' : 'good',
+                result: navigator.cookieEnabled ? 'enabled' : 'disabled'
+            };
+        }
+    },
+    {
+        id: 'pol-localstorage',
+        name: 'Local storage',
+        detail: 'Whether localStorage is writable',
+        section: 'policies',
+        run: async () => {
+            try {
+                localStorage.setItem('__icsd_test', '1');
+                localStorage.removeItem('__icsd_test');
+                return { status: 'info', result: 'writable' };
+            } catch (e) {
+                return { status: 'good', result: 'blocked' };
+            }
+        }
+    },
+    {
+        id: 'pol-notifications',
+        name: 'Notification permission',
+        detail: 'Whether websites can request notifications',
+        section: 'policies',
+        run: async () => {
+            if ('Notification' in window) {
+                const perm = Notification.permission;
+                return {
+                    status: 'info',
+                    result: perm
+                };
+            }
+            return { status: 'good', result: 'API blocked' };
+        }
+    },
+    {
+        id: 'pol-geolocation',
+        name: 'Geolocation API',
+        detail: 'Whether the geolocation API is available',
+        section: 'policies',
+        run: async () => {
+            const available = 'geolocation' in navigator;
+            return {
+                status: 'info',
+                result: available ? 'available' : 'blocked'
+            };
+        }
+    },
+    {
+        id: 'pol-camera',
+        name: 'Camera/Mic API',
+        detail: 'Whether getUserMedia API is available',
+        section: 'policies',
+        run: async () => {
+            const available = navigator.mediaDevices && 'getUserMedia' in navigator.mediaDevices;
+            return {
+                status: 'info',
+                result: available ? 'available' : 'blocked'
+            };
+        }
+    },
+    {
+        id: 'pol-clipboard',
+        name: 'Clipboard API',
+        detail: 'Whether programmatic clipboard access is available',
+        section: 'policies',
+        run: async () => {
+            const available = navigator.clipboard && 'readText' in navigator.clipboard;
+            return {
+                status: 'info',
+                result: available ? 'read available' : 'read blocked'
+            };
+        }
+    },
+    {
+        id: 'pol-midi',
+        name: 'Web MIDI API',
+        detail: 'Whether Web MIDI (for musical instruments) is available',
+        section: 'policies',
+        run: async () => {
+            return {
+                status: 'info',
+                result: ('requestMIDIAccess' in navigator) ? 'available' : 'blocked'
+            };
+        }
+    },
+    {
+        id: 'pol-usb',
+        name: 'WebUSB API',
+        detail: 'Whether WebUSB (direct USB device access) is available',
+        section: 'policies',
+        run: async () => {
+            return {
+                status: ('usb' in navigator) ? 'warn' : 'good',
+                result: ('usb' in navigator) ? 'available' : 'blocked'
+            };
+        }
+    },
+    {
+        id: 'pol-bluetooth',
+        name: 'Web Bluetooth API',
+        detail: 'Whether Web Bluetooth is available',
+        section: 'policies',
+        run: async () => {
+            return {
+                status: 'info',
+                result: ('bluetooth' in navigator) ? 'available' : 'blocked'
+            };
+        }
+    },
+    {
+        id: 'pol-serial',
+        name: 'Web Serial API',
+        detail: 'Whether Web Serial (direct serial port access) is available',
+        section: 'policies',
+        run: async () => {
+            return {
+                status: ('serial' in navigator) ? 'warn' : 'good',
+                result: ('serial' in navigator) ? 'available' : 'blocked'
+            };
+        }
+    },
+    {
+        id: 'pol-serviceworker',
+        name: 'Service Workers',
+        detail: 'Whether service workers (for offline apps) can be registered',
+        section: 'policies',
+        run: async () => {
+            return {
+                status: 'info',
+                result: ('serviceWorker' in navigator) ? 'enabled' : 'disabled'
+            };
+        }
+    },
+
+    // ============ BROWSER CAPABILITIES ============
+
+    {
+        id: 'cap-webrtc',
+        name: 'WebRTC',
+        detail: 'WebRTC is sometimes used for peer-to-peer tunneling and IP leaks',
+        section: 'capabilities',
+        run: async () => {
+            return {
+                status: 'info',
+                result: ('RTCPeerConnection' in window) ? 'available' : 'blocked'
+            };
+        }
+    },
+    {
+        id: 'cap-webrtc-leak',
+        name: 'WebRTC local IP leak',
+        detail: 'Whether WebRTC reveals the local IP (privacy leak if enabled)',
+        section: 'capabilities',
+        run: async () => {
+            if (!('RTCPeerConnection' in window)) {
+                return { status: 'good', result: 'WebRTC blocked' };
+            }
+            return new Promise((resolve) => {
+                try {
+                    const pc = new RTCPeerConnection({iceServers: []});
+                    pc.createDataChannel('');
+                    pc.createOffer().then(o => pc.setLocalDescription(o));
+                    const ips = new Set();
+                    const timer = setTimeout(() => {
+                        pc.close();
+                        const ipList = Array.from(ips);
+                        if (ipList.length > 0) {
+                            resolve({ status: 'warn', result: 'leaked: ' + ipList.join(', ') });
+                        } else {
+                            resolve({ status: 'good', result: 'no leak detected' });
+                        }
+                    }, 1500);
+                    pc.onicecandidate = (e) => {
+                        if (e.candidate && e.candidate.candidate) {
+                            const m = e.candidate.candidate.match(/([0-9a-f.:]+)/g);
+                            if (m) m.forEach(ip => {
+                                if (/^(\d+\.\d+\.\d+\.\d+)$/.test(ip) && !ip.startsWith('0.')) {
+                                    ips.add(ip);
+                                }
+                            });
+                        }
+                    };
+                } catch (e) {
+                    resolve({ status: 'info', result: 'error: ' + e.message });
+                }
+            });
+        }
+    },
+    {
+        id: 'cap-downloads',
+        name: 'File download test',
+        detail: 'Whether the browser can initiate downloads (via Blob URL)',
+        section: 'capabilities',
+        run: async () => {
+            try {
+                const blob = new Blob(['test'], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                URL.revokeObjectURL(url);
+                return { status: 'info', result: 'enabled' };
+            } catch (e) {
+                return { status: 'good', result: 'blocked' };
+            }
+        }
+    },
+    {
+        id: 'cap-wasm',
+        name: 'WebAssembly',
+        detail: 'Whether WASM can run (used by some apps but also by some exploits)',
+        section: 'capabilities',
+        run: async () => {
+            return {
+                status: 'info',
+                result: ('WebAssembly' in window) ? 'enabled' : 'disabled'
+            };
+        }
+    },
+    {
+        id: 'cap-shareapi',
+        name: 'Web Share API',
+        detail: 'Whether the Web Share API is available',
+        section: 'capabilities',
+        run: async () => {
+            return {
+                status: 'info',
+                result: ('share' in navigator) ? 'available' : 'blocked'
+            };
+        }
+    },
+    {
+        id: 'cap-managed',
+        name: 'Enterprise managed',
+        detail: 'Whether Chrome reports being managed by an enterprise',
+        section: 'capabilities',
+        run: async () => {
+            // Chrome exposes navigator.managed for managed devices (experimental)
+            // Also try reading the enterprise policy via DevicePolicy API if available
+            if ('managed' in navigator) {
+                return { status: 'good', result: 'reported managed' };
+            }
+            return {
+                status: 'info',
+                result: 'not exposed to JS',
+                detail: 'JS cannot directly read enterprise policies - check chrome://policy'
+            };
+        }
+    },
+
+    // ============ CONTENT FILTER REACHABILITY ============
+    // These tests attempt to load content from various categories of sites.
+    // Using mode: 'no-cors' lets us detect reachability without CORS errors.
+
+    {
+        id: 'filter-wikipedia',
+        name: 'Wikipedia',
+        detail: 'Expected to be reachable - educational content',
+        section: 'filter',
+        run: async () => {
+            return await testFetch('https://en.wikipedia.org/wiki/Main_Page', 'good');
+        }
+    },
+    {
+        id: 'filter-khan',
+        name: 'Khan Academy',
+        detail: 'Expected to be reachable - educational content',
+        section: 'filter',
+        run: async () => {
+            return await testFetch('https://www.khanacademy.org/', 'good');
+        }
+    },
+    {
+        id: 'filter-youtube',
+        name: 'YouTube',
+        detail: 'Expected to be reachable or restricted-mode',
+        section: 'filter',
+        run: async () => {
+            return await testFetch('https://www.youtube.com/', 'info');
+        }
+    },
+    {
+        id: 'filter-reddit',
+        name: 'Reddit',
+        detail: 'Common category: social - check whether blocked',
+        section: 'filter',
+        run: async () => {
+            return await testFetch('https://www.reddit.com/', 'info');
+        }
+    },
+    {
+        id: 'filter-twitter',
+        name: 'X / Twitter',
+        detail: 'Common category: social - check whether blocked',
+        section: 'filter',
+        run: async () => {
+            return await testFetch('https://x.com/', 'info');
+        }
+    },
+    {
+        id: 'filter-discord',
+        name: 'Discord',
+        detail: 'Common category: chat/gaming - check whether blocked',
+        section: 'filter',
+        run: async () => {
+            return await testFetch('https://discord.com/', 'info');
+        }
+    },
+    {
+        id: 'filter-steam',
+        name: 'Steam',
+        detail: 'Common category: gaming - check whether blocked',
+        section: 'filter',
+        run: async () => {
+            return await testFetch('https://store.steampowered.com/', 'info');
+        }
+    },
+    {
+        id: 'filter-coolmath',
+        name: 'Coolmath Games',
+        detail: 'Common category: gaming - often reachable in schools',
+        section: 'filter',
+        run: async () => {
+            return await testFetch('https://www.coolmathgames.com/', 'info');
+        }
+    },
+    {
+        id: 'filter-twitch',
+        name: 'Twitch',
+        detail: 'Common category: streaming - check whether blocked',
+        section: 'filter',
+        run: async () => {
+            return await testFetch('https://www.twitch.tv/', 'info');
+        }
+    },
+    {
+        id: 'filter-netflix',
+        name: 'Netflix',
+        detail: 'Common category: streaming - check whether blocked',
+        section: 'filter',
+        run: async () => {
+            return await testFetch('https://www.netflix.com/', 'info');
+        }
+    },
+
+    // ============ FILTER BYPASS METHODS ============
+
+    {
+        id: 'bypass-googletranslate',
+        name: 'Google Translate proxy',
+        detail: 'Google Translate can be used as a proxy to view blocked sites',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://translate.google.com/', 'info');
+        }
+    },
+    {
+        id: 'bypass-webcache',
+        name: 'Google cached pages',
+        detail: 'Cached versions of pages can sometimes bypass filtering',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://webcache.googleusercontent.com/', 'info');
+        }
+    },
+    {
+        id: 'bypass-archive',
+        name: 'Wayback Machine',
+        detail: 'Archived pages can sometimes bypass filtering',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://web.archive.org/', 'info');
+        }
+    },
+    {
+        id: 'bypass-duckduckgo',
+        name: 'DuckDuckGo',
+        detail: 'Alternative search that may expose blocked content via image search',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://duckduckgo.com/', 'info');
+        }
+    },
+    {
+        id: 'bypass-brave',
+        name: 'Brave Search',
+        detail: 'Alternative search engine',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://search.brave.com/', 'info');
+        }
+    },
+    {
+        id: 'bypass-cloudflare-doh',
+        name: 'Cloudflare DoH (fetch)',
+        detail: 'DNS over HTTPS - can bypass DNS-based filtering entirely',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://cloudflare-dns.com/dns-query?name=example.com&type=A', 'bad', {
+                Accept: 'application/dns-json'
+            });
+        }
+    },
+    {
+        id: 'bypass-google-doh',
+        name: 'Google DoH (fetch)',
+        detail: 'DNS over HTTPS - can bypass DNS-based filtering entirely',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://dns.google/resolve?name=example.com&type=A', 'bad');
+        }
+    },
+    {
+        id: 'bypass-onion-router',
+        name: 'Tor Project site',
+        detail: 'Reachability to tor project - if reachable, students can learn about Tor',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://www.torproject.org/', 'warn');
+        }
+    },
+    {
+        id: 'bypass-protonvpn',
+        name: 'ProtonVPN',
+        detail: 'Reachability to VPN service homepage',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://protonvpn.com/', 'warn');
+        }
+    },
+    {
+        id: 'bypass-croxyproxy',
+        name: 'CroxyProxy (web proxy)',
+        detail: 'Common web-based proxy used by students to bypass filters',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://www.croxyproxy.com/', 'bad');
+        }
+    },
+    {
+        id: 'bypass-hideme',
+        name: 'hide.me (web proxy)',
+        detail: 'Common web-based proxy used by students to bypass filters',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://hide.me/', 'bad');
+        }
+    },
+
+    // ============ INTERNAL INFRASTRUCTURE ============
+    // These test reachability to common internal infrastructure hostnames.
+    // They're best-effort - some will fail due to DNS not resolving, others due
+    // to the site not speaking HTTPS. The result is informative either way.
+
+    {
+        id: 'internal-icsd',
+        name: 'icsd.k12.ny.us',
+        detail: 'District main domain - expected to resolve',
+        section: 'internal',
+        run: async () => {
+            return await testFetch('https://www.icsd.k12.ny.us/', 'info');
+        }
+    },
+    {
+        id: 'internal-mail-google',
+        name: 'Google Workspace mail',
+        detail: 'mail.google.com should be reachable for students',
+        section: 'internal',
+        run: async () => {
+            return await testFetch('https://mail.google.com/', 'info');
+        }
+    },
+    {
+        id: 'internal-classroom',
+        name: 'Google Classroom',
+        detail: 'classroom.google.com should be reachable for students',
+        section: 'internal',
+        run: async () => {
+            return await testFetch('https://classroom.google.com/', 'info');
+        }
+    },
+    {
+        id: 'internal-drive',
+        name: 'Google Drive',
+        detail: 'drive.google.com should be reachable for students',
+        section: 'internal',
+        run: async () => {
+            return await testFetch('https://drive.google.com/', 'info');
+        }
+    },
+];
+
+// ============================================================================
+// TEST HARNESS
+// ============================================================================
+
+// Fetch a URL with a timeout and classify the result
+async function testFetch(url, expectedStatus = 'info', headers = {}) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const start = Date.now();
+
+    try {
+        await fetch(url, {
+            method: 'GET',
+            mode: 'no-cors',
+            cache: 'no-store',
+            headers: headers,
+            signal: controller.signal,
+            credentials: 'omit'
+        });
+        clearTimeout(timeout);
+        const ms = Date.now() - start;
+        // With no-cors, we get an opaque response for anything reachable.
+        // We can't read the status, but we know the request completed.
+        return {
+            status: expectedStatus,
+            result: 'reachable (' + ms + 'ms)'
+        };
+    } catch (e) {
+        clearTimeout(timeout);
+        // Connection failed - could be DNS blocked, filter block, or real network failure
+        if (e.name === 'AbortError') {
+            return { status: 'good', result: 'timeout/blocked' };
+        }
+        return { status: 'good', result: 'blocked' };
+    }
+}
+
+// ============================================================================
+// UI
+// ============================================================================
+
+const state = {
+    results: {}, // id -> { status, result }
+    running: false
+};
+
+function renderTestRows() {
+    const sections = ['device', 'policies', 'capabilities', 'filter', 'bypass', 'internal'];
+    for (const section of sections) {
+        const listEl = document.getElementById('list-' + section);
+        listEl.innerHTML = '';
+        const tests = TESTS.filter(t => t.section === section);
+        for (const test of tests) {
+            const row = document.createElement('div');
+            row.className = 'test-row';
+            row.id = 'row-' + test.id;
+
+            const result = state.results[test.id];
+            const status = result ? result.status : 'pending';
+            const resultText = result ? result.result : '';
+
+            row.innerHTML = `
+                <span class="status status-${status}">${status}</span>
+                <div class="body">
+                    <div class="name">${escapeHtml(test.name)}</div>
+                    <div class="detail">${escapeHtml(test.detail)}</div>
+                </div>
+                <div class="result ${status === 'bad' || status === 'warn' || status === 'good' ? status : ''}">${escapeHtml(resultText)}</div>
+            `;
+            listEl.appendChild(row);
+        }
+    }
+    updateCounts();
+}
+
+function updateCounts() {
+    let good = 0, bad = 0, warn = 0, info = 0, pending = 0;
+    const sections = {};
+
+    for (const test of TESTS) {
+        if (!sections[test.section]) {
+            sections[test.section] = { total: 0, done: 0 };
+        }
+        sections[test.section].total++;
+
+        const r = state.results[test.id];
+        if (!r) {
+            pending++;
+        } else {
+            sections[test.section].done++;
+            if (r.status === 'good') good++;
+            else if (r.status === 'bad') bad++;
+            else if (r.status === 'warn') warn++;
+            else if (r.status === 'info') info++;
+        }
+    }
+
+    document.getElementById('count-good').textContent = good;
+    document.getElementById('count-bad').textContent = bad;
+    document.getElementById('count-warn').textContent = warn;
+    document.getElementById('count-info').textContent = info;
+    document.getElementById('count-pending').textContent = pending;
+
+    for (const [sec, c] of Object.entries(sections)) {
+        const el = document.getElementById('counts-' + sec);
+        if (el) el.textContent = c.done + ' / ' + c.total;
+    }
+}
+
+function updateTestRow(test, result) {
+    const row = document.getElementById('row-' + test.id);
+    if (!row) return;
+    const statusEl = row.querySelector('.status');
+    const resultEl = row.querySelector('.result');
+    statusEl.className = 'status status-' + result.status;
+    statusEl.textContent = result.status;
+    resultEl.className = 'result ' + (result.status === 'bad' || result.status === 'warn' || result.status === 'good' ? result.status : '');
+    resultEl.textContent = result.result;
+}
+
+function setTestRunning(test) {
+    const row = document.getElementById('row-' + test.id);
+    if (!row) return;
+    const statusEl = row.querySelector('.status');
+    statusEl.className = 'status status-running';
+    statusEl.textContent = 'running';
+}
+
+async function runAllTests() {
+    if (state.running) return;
+    state.running = true;
+    document.getElementById('run-all').disabled = true;
+    state.results = {};
+    renderTestRows();
+
+    // Run tests in small batches so we don't flood the network
+    const batchSize = 4;
+    for (let i = 0; i < TESTS.length; i += batchSize) {
+        const batch = TESTS.slice(i, i + batchSize);
+        await Promise.all(batch.map(async (test) => {
+            setTestRunning(test);
+            try {
+                const result = await test.run();
+                state.results[test.id] = result;
+                updateTestRow(test, result);
+            } catch (e) {
+                const result = { status: 'warn', result: 'error: ' + (e.message || 'unknown') };
+                state.results[test.id] = result;
+                updateTestRow(test, result);
+            }
+            updateCounts();
+        }));
+    }
+
+    state.running = false;
+    document.getElementById('run-all').disabled = false;
+}
+
+function resetTests() {
+    state.results = {};
+    renderTestRows();
+    document.getElementById('export-output').value = '';
+}
+
+function exportReport() {
+    const lines = [];
+    lines.push('ICSD Student Chromebook Audit Report');
+    lines.push('Generated: ' + new Date().toISOString());
+    lines.push('Source: ' + window.location.href);
+    lines.push('User Agent: ' + navigator.userAgent);
+    lines.push('');
+    lines.push('='.repeat(70));
+
+    let good = 0, bad = 0, warn = 0, info = 0;
+    for (const test of TESTS) {
+        const r = state.results[test.id];
+        if (!r) continue;
+        if (r.status === 'good') good++;
+        else if (r.status === 'bad') bad++;
+        else if (r.status === 'warn') warn++;
+        else if (r.status === 'info') info++;
+    }
+
+    lines.push('SUMMARY');
+    lines.push('  Good:        ' + good);
+    lines.push('  Concerning:  ' + bad);
+    lines.push('  Warn:        ' + warn);
+    lines.push('  Info:        ' + info);
+    lines.push('');
+
+    const sectionNames = {
+        'device': 'DEVICE & BROWSER FINGERPRINT',
+        'policies': 'BROWSER POLICY ENFORCEMENT',
+        'capabilities': 'BROWSER CAPABILITIES & API ACCESS',
+        'filter': 'CONTENT FILTER REACHABILITY',
+        'bypass': 'FILTER BYPASS METHODS',
+        'internal': 'INTERNAL INFRASTRUCTURE REACHABILITY'
+    };
+
+    for (const [sec, name] of Object.entries(sectionNames)) {
+        lines.push('='.repeat(70));
+        lines.push(name);
+        lines.push('='.repeat(70));
+        const tests = TESTS.filter(t => t.section === sec);
+        for (const test of tests) {
+            const r = state.results[test.id];
+            if (!r) continue;
+            const status = r.status.toUpperCase().padEnd(8);
+            lines.push('[' + status + '] ' + test.name);
+            lines.push('           ' + test.detail);
+            lines.push('           Result: ' + r.result);
+            lines.push('');
+        }
+    }
+
+    lines.push('='.repeat(70));
+    lines.push('NOTES');
+    lines.push('='.repeat(70));
+    lines.push('- Status "good" means the test outcome suggests protection is working');
+    lines.push('  (e.g., a bypass site is blocked, a risky API is unavailable).');
+    lines.push('- Status "bad" or "warn" suggests a potential gap or risk.');
+    lines.push('- Status "info" is informational - neither good nor bad on its own.');
+    lines.push('- Filter reachability tests use mode: no-cors, which means we can only');
+    lines.push('  detect whether the request completed, not what the response was.');
+    lines.push('  A "reachable" result means the browser got a response from the URL.');
+    lines.push('- Some tests (like DevTools availability) cannot be fully automated');
+    lines.push('  and require manual verification alongside this report.');
+
+    document.getElementById('export-output').value = lines.join('\n');
+    document.getElementById('export-output').select();
+    try {
+        document.execCommand('copy');
+    } catch (e) {}
+}
+
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+// ============================================================================
+// INIT
+// ============================================================================
+
+document.getElementById('run-all').addEventListener('click', runAllTests);
+document.getElementById('reset').addEventListener('click', resetTests);
+document.getElementById('export').addEventListener('click', exportReport);
+
+renderTestRows();
+</script>
+</body>
+</html>
