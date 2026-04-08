@@ -930,81 +930,6 @@ const TESTS = [
         }
     },
     {
-        id: 'policy-search-suggest',
-        name: 'Search suggestions',
-        detail: 'Does the URL bar offer suggestions?',
-        section: 'policies',
-        severity: 1,
-        policy: 'SearchSuggestEnabled',
-        why: 'Search suggestions send keystrokes from the URL bar to a search engine. Privacy tradeoff - most districts leave this enabled for usability.',
-        run: async () => {
-            return { status: 'info', result: 'check chrome://settings/syncSetup manually' };
-        }
-    },
-    {
-        id: 'policy-autofill-addr',
-        name: 'Address autofill',
-        detail: 'Autofill for addresses and contact info',
-        section: 'policies',
-        severity: 1,
-        policy: 'AutofillAddressEnabled',
-        fix: 'For student OUs, consider setting AutofillAddressEnabled to False.',
-        why: 'Autofill storing personal info in the browser profile is a minor privacy concern for student accounts.',
-        run: async () => {
-            return { status: 'info', result: 'verify via chrome://settings/addresses' };
-        }
-    },
-    {
-        id: 'policy-autofill-cc',
-        name: 'Credit card autofill',
-        detail: 'Autofill for payment information',
-        section: 'policies',
-        severity: 3,
-        policy: 'AutofillCreditCardEnabled',
-        fix: 'Set AutofillCreditCardEnabled to False for student OUs.',
-        why: 'Student devices should never store payment information. Block this entirely.',
-        run: async () => {
-            return { status: 'info', result: 'verify via chrome://settings/payments' };
-        }
-    },
-    {
-        id: 'policy-password-manager',
-        name: 'Password manager',
-        detail: 'Built-in Chrome password saving',
-        section: 'policies',
-        severity: 2,
-        policy: 'PasswordManagerEnabled',
-        fix: 'For student OUs, consider setting PasswordManagerEnabled to False to prevent credential persistence on shared devices.',
-        why: 'On shared or checked-out devices, saved passwords persist between users and create credential theft risk. Many districts disable this.',
-        run: async () => {
-            return { status: 'info', result: 'verify via chrome://settings/passwords' };
-        }
-    },
-    {
-        id: 'policy-translate',
-        name: 'Translate service',
-        detail: 'Does Chrome offer to translate pages?',
-        section: 'policies',
-        severity: 0,
-        policy: 'TranslateEnabled',
-        why: 'Translate sends page content to Google servers. Educational benefit usually outweighs privacy concern - most districts leave enabled.',
-        run: async () => {
-            return { status: 'info', result: 'verify via chrome://settings/languages' };
-        }
-    },
-    {
-        id: 'policy-spellcheck',
-        name: 'Spellcheck service',
-        detail: 'Enhanced spellcheck that sends text to Google',
-        section: 'policies',
-        severity: 1,
-        policy: 'SpellcheckEnabled / SpellCheckServiceEnabled',
-        why: 'Enhanced spellcheck sends text to Google servers. Basic local spellcheck does not. For student work, consider basic only.',
-        run: async () => {
-            return { status: 'info', result: 'verify via chrome://settings/languages' };
-        }
-    },
-    {
         id: 'policy-printing',
         name: 'Printing enabled',
         detail: 'Can users print from the browser?',
@@ -1018,43 +943,6 @@ const TESTS = [
                 status: typeof window.print === 'function' ? 'info' : 'warn',
                 result: typeof window.print === 'function' ? 'available' : 'blocked'
             };
-        }
-    },
-    {
-        id: 'policy-sync',
-        name: 'Chrome Sync',
-        detail: 'Syncing browser data to Google account',
-        section: 'policies',
-        severity: 2,
-        policy: 'SyncDisabled',
-        fix: 'For managed student devices with managed Google accounts, sync behavior should be controlled explicitly via SyncDisabled or SyncTypesListDisabled.',
-        why: 'Sync decisions affect whether bookmarks, history, passwords, and extensions follow users across devices.',
-        run: async () => {
-            return { status: 'info', result: 'verify via chrome://settings/syncSetup' };
-        }
-    },
-    {
-        id: 'policy-dns-prefetch',
-        name: 'DNS prefetch',
-        detail: 'Does Chrome prefetch DNS for linked sites?',
-        section: 'policies',
-        severity: 0,
-        policy: 'NetworkPredictionOptions',
-        why: 'DNS prefetch is a performance feature. Mostly neutral from a security perspective.',
-        run: async () => {
-            return { status: 'info', result: 'performance feature (see chrome://settings/cookies)' };
-        }
-    },
-    {
-        id: 'policy-metric-reporting',
-        name: 'Metric reporting',
-        detail: 'Usage statistics reporting to Google',
-        section: 'policies',
-        severity: 0,
-        policy: 'MetricsReportingEnabled',
-        why: 'Telemetry. Most districts leave default.',
-        run: async () => {
-            return { status: 'info', result: 'check chrome://settings/privacy' };
         }
     },
     {
@@ -1227,10 +1115,21 @@ const TESTS = [
         section: 'hardware',
         severity: 0,
         why: 'Can be used for fingerprinting if a student has a gamepad connected. Otherwise benign.',
-        run: async () => ({
-            status: 'info',
-            result: 'getGamepads' in navigator ? 'available' : 'blocked'
-        })
+        run: async () => {
+            if (!('getGamepads' in navigator)) {
+                return { status: 'info', result: 'API blocked' };
+            }
+            try {
+                const pads = navigator.getGamepads();
+                const connected = Array.from(pads || []).filter(p => p !== null).length;
+                return {
+                    status: 'info',
+                    result: connected === 0 ? 'API available, no pads connected' : ('API available, ' + connected + ' connected')
+                };
+            } catch (e) {
+                return { status: 'info', result: 'API present, query failed' };
+            }
+        }
     },
     {
         id: 'hw-webauthn',
@@ -1238,11 +1137,24 @@ const TESTS = [
         detail: 'Passkey and security key support',
         section: 'hardware',
         severity: 0,
-        why: 'Enables phishing-resistant authentication with passkeys and security keys. Positive security feature.',
-        run: async () => ({
-            status: 'info',
-            result: 'PublicKeyCredential' in window ? 'available (good)' : 'blocked'
-        })
+        why: 'Enables phishing-resistant authentication with passkeys and security keys. Positive security feature. Checking whether a platform authenticator (like ChromeOS built-in) is available.',
+        run: async () => {
+            if (!('PublicKeyCredential' in window)) {
+                return { status: 'warn', result: 'API blocked' };
+            }
+            try {
+                if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') {
+                    return { status: 'info', result: 'API present, no platform check' };
+                }
+                const hasPlatform = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                return {
+                    status: 'good',
+                    result: hasPlatform ? 'available + platform authenticator' : 'available (no platform auth)'
+                };
+            } catch (e) {
+                return { status: 'good', result: 'API available' };
+            }
+        }
     },
     {
         id: 'hw-payment',
@@ -1372,11 +1284,20 @@ const TESTS = [
         detail: 'Battery level and charging state',
         section: 'sensors',
         severity: 1,
-        why: 'Battery API was removed as a standalone interface in most browsers due to fingerprinting concerns. Chrome retains partial support.',
-        run: async () => ({
-            status: 'getBattery' in navigator ? 'warn' : 'good',
-            result: 'getBattery' in navigator ? 'available' : 'not available'
-        })
+        why: 'Battery API was removed as a standalone interface in most browsers due to fingerprinting concerns. Chrome retains support. When available, any page can read battery level and charging state without permission.',
+        run: async () => {
+            if (!('getBattery' in navigator)) {
+                return { status: 'good', result: 'API blocked' };
+            }
+            try {
+                const battery = await navigator.getBattery();
+                const pct = Math.round((battery.level || 0) * 100);
+                const charging = battery.charging ? 'charging' : 'discharging';
+                return { status: 'warn', result: pct + '%, ' + charging };
+            } catch (e) {
+                return { status: 'warn', result: 'API present but query failed' };
+            }
+        }
     },
     {
         id: 'sensor-idle',
@@ -1427,12 +1348,20 @@ const TESTS = [
     {
         id: 'storage-persist',
         name: 'Persistent storage',
-        detail: 'Can pages request persistent storage?',
+        detail: 'Is persistent storage currently granted to this origin?',
         section: 'storage',
         severity: 1,
+        why: 'Persistent storage means the browser will not evict cached data under storage pressure. Not typically a security concern but useful for diagnostic completeness.',
         run: async () => {
-            if (!navigator.storage || !navigator.storage.persist) return { status: 'info', result: 'API unavailable' };
-            return { status: 'info', result: 'API available' };
+            if (!navigator.storage || !navigator.storage.persisted) {
+                return { status: 'info', result: 'API unavailable' };
+            }
+            try {
+                const isPersisted = await navigator.storage.persisted();
+                return { status: 'info', result: isPersisted ? 'granted for this origin' : 'not granted (default)' };
+            } catch (e) {
+                return { status: 'info', result: 'query failed' };
+            }
         }
     },
     {
@@ -1506,12 +1435,20 @@ const TESTS = [
     {
         id: 'storage-access',
         name: 'Storage Access API',
-        detail: 'Request access to third-party storage',
+        detail: 'Does this origin currently have storage access?',
         section: 'storage',
         severity: 1,
-        why: 'Used by embedded iframes to request first-party cookie access.',
+        why: 'Used by embedded iframes to request first-party cookie access. Checking current state for this top-level document.',
         run: async () => {
-            return { status: 'info', result: document.hasStorageAccess ? 'available' : 'blocked' };
+            if (typeof document.hasStorageAccess !== 'function') {
+                return { status: 'info', result: 'API unavailable' };
+            }
+            try {
+                const hasAccess = await document.hasStorageAccess();
+                return { status: 'info', result: hasAccess ? 'has access (top-level)' : 'no access (normal for new contexts)' };
+            } catch (e) {
+                return { status: 'info', result: 'query failed' };
+            }
         }
     },
     {
@@ -1633,14 +1570,29 @@ const TESTS = [
     {
         id: 'fp-media-capabilities',
         name: 'Media Capabilities',
-        detail: 'mediaCapabilities API',
+        detail: 'Codec support enumeration',
         section: 'fingerprint',
         severity: 1,
-        why: 'Can query what codecs the device supports. Fingerprinting signal.',
-        run: async () => ({
-            status: 'info',
-            result: 'mediaCapabilities' in navigator ? 'available' : 'blocked'
-        })
+        why: 'Can query which video codecs the device can decode. Fingerprinting signal because codec support varies by hardware and platform.',
+        run: async () => {
+            if (!('mediaCapabilities' in navigator) || typeof navigator.mediaCapabilities.decodingInfo !== 'function') {
+                return { status: 'good', result: 'API blocked' };
+            }
+            const codecs = [
+                { name: 'H.264', config: { type: 'file', video: { contentType: 'video/mp4; codecs="avc1.42E01E"', width: 1280, height: 720, bitrate: 2000000, framerate: 30 }}},
+                { name: 'VP9',   config: { type: 'file', video: { contentType: 'video/webm; codecs="vp9"',        width: 1280, height: 720, bitrate: 2000000, framerate: 30 }}},
+                { name: 'AV1',   config: { type: 'file', video: { contentType: 'video/mp4; codecs="av01.0.05M.08"', width: 1280, height: 720, bitrate: 2000000, framerate: 30 }}}
+            ];
+            const supported = [];
+            for (const codec of codecs) {
+                try {
+                    const info = await navigator.mediaCapabilities.decodingInfo(codec.config);
+                    if (info.supported) supported.push(codec.name);
+                } catch (e) { /* skip */ }
+            }
+            if (supported.length === 0) return { status: 'info', result: 'API present, no codecs detected' };
+            return { status: 'warn', result: 'supports: ' + supported.join(', ') };
+        }
     },
     {
         id: 'fp-keyboard-layout',
@@ -1648,10 +1600,18 @@ const TESTS = [
         detail: 'Keyboard API layout reporting',
         section: 'fingerprint',
         severity: 1,
-        why: 'Reveals physical keyboard layout - useful for localization but also fingerprinting.',
+        why: 'The Keyboard API exposes the physical keyboard layout - useful for localization but also a fingerprinting signal because it reveals the specific key mappings of the physical keyboard.',
         run: async () => {
-            if (!navigator.keyboard) return { status: 'good', result: 'API unavailable' };
-            return { status: 'info', result: 'Keyboard API present' };
+            if (!navigator.keyboard || typeof navigator.keyboard.getLayoutMap !== 'function') {
+                return { status: 'good', result: 'API blocked' };
+            }
+            try {
+                const layout = await navigator.keyboard.getLayoutMap();
+                const size = layout.size || 0;
+                return { status: 'warn', result: size + ' keys exposed' };
+            } catch (e) {
+                return { status: 'info', result: 'API present, query failed' };
+            }
         }
     },
     {
@@ -2108,6 +2068,50 @@ const TESTS = [
         severity: 0,
         why: 'Document for asset inventory and support purposes.',
         run: async () => ({ status: 'manual', result: 'check Settings > About' })
+    },
+    {
+        id: 'm-autofill-addr',
+        name: 'Address autofill setting',
+        detail: 'Navigate to chrome://settings/addresses',
+        section: 'manual',
+        severity: 1,
+        policy: 'AutofillAddressEnabled',
+        fix: 'For student OUs, consider setting AutofillAddressEnabled to False in Google Admin.',
+        why: 'Autofill storing personal info in the browser profile is a minor privacy concern for student accounts. Chrome does not expose the autofill policy state to JavaScript, so this requires manual verification of the setting in Chrome Settings.',
+        run: async () => ({ status: 'manual', result: 'open chrome://settings/addresses' })
+    },
+    {
+        id: 'm-autofill-cc',
+        name: 'Credit card autofill setting',
+        detail: 'Navigate to chrome://settings/payments',
+        section: 'manual',
+        severity: 3,
+        policy: 'AutofillCreditCardEnabled',
+        fix: 'Set AutofillCreditCardEnabled to False for student OUs. Student devices should never store payment information.',
+        why: 'Chrome does not expose autofill policy state to JS. Check Settings > Payment methods directly. If the "Save and fill payment methods" toggle can be changed, the policy is not locked.',
+        run: async () => ({ status: 'manual', result: 'open chrome://settings/payments' })
+    },
+    {
+        id: 'm-password-manager',
+        name: 'Password manager setting',
+        detail: 'Navigate to chrome://settings/passwords',
+        section: 'manual',
+        severity: 2,
+        policy: 'PasswordManagerEnabled',
+        fix: 'For shared/checked-out devices, consider setting PasswordManagerEnabled to False. On personally-assigned devices with managed accounts, leaving it enabled is usually fine.',
+        why: 'On shared or checked-out devices, saved passwords persist between users and create credential theft risk. Chrome does not expose the password manager policy state to JS, so check chrome://settings/passwords directly. If the "Offer to save passwords" toggle can be changed, the policy is not enforced.',
+        run: async () => ({ status: 'manual', result: 'open chrome://settings/passwords' })
+    },
+    {
+        id: 'm-spellcheck',
+        name: 'Spellcheck service setting',
+        detail: 'Navigate to chrome://settings/languages',
+        section: 'manual',
+        severity: 1,
+        policy: 'SpellcheckEnabled / SpellCheckServiceEnabled',
+        fix: 'For student OUs, consider using basic (local) spellcheck only. Enhanced spellcheck sends text content to Google servers.',
+        why: 'Enhanced spellcheck sends text to Google servers for spell checking. Basic local spellcheck does not. Chrome does not expose spellcheck results or configuration to JS for privacy reasons, so this must be verified in Chrome Settings.',
+        run: async () => ({ status: 'manual', result: 'open chrome://settings/languages' })
     },
 ];
 
