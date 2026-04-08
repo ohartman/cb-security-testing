@@ -17,7 +17,6 @@
         --good: #2ea043;
         --warn: #d29922;
         --bad: #f85149;
-        --bad-soft: #ff8c42;
         --info: #58a6ff;
         --mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
     }
@@ -62,12 +61,14 @@
         border-left: 4px solid var(--accent);
         padding: 14px 18px;
         border-radius: 4px;
-        margin-bottom: 24px;
+        margin-bottom: 16px;
         font-size: 14px;
         color: var(--text-dim);
     }
 
     .notice strong { color: var(--text); }
+    .notice.warn { border-left-color: var(--warn); }
+    .notice code { background: var(--surface-alt); padding: 1px 6px; border-radius: 3px; color: var(--text); font-family: var(--mono); font-size: 12px; }
 
     .controls {
         display: flex;
@@ -90,22 +91,14 @@
     }
 
     button:hover { background: var(--accent-bright); }
-
-    button:disabled {
-        background: var(--surface-alt);
-        color: var(--text-dim);
-        cursor: not-allowed;
-    }
+    button:disabled { background: var(--surface-alt); color: var(--text-dim); cursor: not-allowed; }
 
     button.secondary {
         background: var(--surface-alt);
         color: var(--text);
         border: 1px solid var(--border);
     }
-
-    button.secondary:hover {
-        background: var(--border);
-    }
+    button.secondary:hover { background: var(--border); }
 
     .summary {
         display: grid;
@@ -122,20 +115,8 @@
         text-align: center;
     }
 
-    .summary-card .num {
-        font-size: 32px;
-        font-weight: 700;
-        font-family: var(--mono);
-    }
-
-    .summary-card .label {
-        font-size: 11px;
-        text-transform: uppercase;
-        color: var(--text-dim);
-        margin-top: 4px;
-        letter-spacing: 0.5px;
-    }
-
+    .summary-card .num { font-size: 32px; font-weight: 700; font-family: var(--mono); }
+    .summary-card .label { font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 4px; letter-spacing: 0.5px; }
     .summary-card.good .num { color: var(--good); }
     .summary-card.bad  .num { color: var(--bad); }
     .summary-card.warn .num { color: var(--warn); }
@@ -167,15 +148,18 @@
         letter-spacing: 0.5px;
     }
 
-    .section-header .counts {
+    .section-header .counts { font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
+
+    .section-desc {
+        padding: 10px 18px;
+        background: var(--bg);
         font-size: 12px;
         color: var(--text-dim);
-        font-family: var(--mono);
+        border-bottom: 1px solid var(--surface-alt);
+        font-style: italic;
     }
 
-    .test-list {
-        padding: 0;
-    }
+    .test-list { padding: 0; }
 
     .test-row {
         padding: 12px 18px;
@@ -185,7 +169,6 @@
         gap: 14px;
         align-items: start;
     }
-
     .test-row:last-child { border-bottom: none; }
 
     .test-row .status {
@@ -204,52 +187,28 @@
     .status-info    { background: var(--info); color: #fff; }
     .status-pending { background: var(--surface-alt); color: var(--text-dim); border: 1px solid var(--border); }
     .status-running { background: var(--accent); color: #fff; animation: pulse 1s infinite; }
+    .status-manual  { background: #6e7681; color: #fff; }
 
     @keyframes pulse {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.5; }
     }
 
-    .test-row .body {
-        min-width: 0;
-    }
-
-    .test-row .name {
-        color: var(--text);
-        font-weight: 600;
-        font-size: 14px;
-        margin-bottom: 3px;
-    }
-
-    .test-row .detail {
-        color: var(--text-dim);
-        font-size: 13px;
-    }
+    .test-row .body { min-width: 0; }
+    .test-row .name { color: var(--text); font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+    .test-row .detail { color: var(--text-dim); font-size: 13px; }
 
     .test-row .result {
         font-family: var(--mono);
         font-size: 12px;
         color: var(--text-dim);
-        max-width: 280px;
+        max-width: 320px;
         word-break: break-word;
         text-align: right;
     }
-
     .test-row .result.good { color: var(--good); }
     .test-row .result.bad  { color: var(--bad); }
     .test-row .result.warn { color: var(--warn); }
-
-    pre {
-        background: var(--bg);
-        border: 1px solid var(--border);
-        padding: 14px;
-        border-radius: 6px;
-        overflow-x: auto;
-        font-family: var(--mono);
-        font-size: 12px;
-        color: var(--text);
-        margin: 12px 18px 18px 18px;
-    }
 
     .export-area {
         margin-top: 28px;
@@ -258,7 +217,6 @@
         border: 1px solid var(--border);
         border-radius: 8px;
     }
-
     .export-area h2 {
         color: var(--accent-bright);
         font-size: 15px;
@@ -294,15 +252,22 @@
     <div class="container">
         <header>
             <h1>ICSD Student Chromebook Audit</h1>
-            <div class="subtitle">In-browser security assessment for managed student devices</div>
+            <div class="subtitle">Policy enforcement and bypass-vector assessment for managed student devices</div>
         </header>
 
         <div class="notice">
-            <strong>About this tool:</strong> This page runs a battery of security tests from inside the browser.
-            It checks what policies are being enforced, what URLs are reachable, what browser capabilities are
-            available, and what common filter bypasses might work. All tests run locally in your browser - nothing
-            is sent to any server. Load this page on a test student Chromebook while logged in as a test student
-            account to audit the effective security policy on that device.
+            <strong>What this tests:</strong> This tool focuses on things your content filter (Linewize) cannot tell you.
+            Rather than testing whether specific URLs are blocked (Linewize handles that well), it checks Chrome policy
+            enforcement, browser capability restrictions, bypass vectors that operate below the content-filter layer,
+            and whether the filter extension itself is detectable. The findings identify gaps that content filtering
+            alone cannot close.
+        </div>
+
+        <div class="notice warn">
+            <strong>Manual checks needed:</strong> Several important checks (developer mode, Powerwash, USB boot,
+            <code>chrome://policy</code>, <code>chrome://management</code>) cannot be automated from JavaScript.
+            Those are listed in the "Manual Verification" section at the bottom with step-by-step instructions.
+            Run the automated tests first, then walk through the manual ones.
         </div>
 
         <div class="controls">
@@ -320,139 +285,79 @@
         </div>
 
         <section id="section-device">
-            <div class="section-header">
-                <h2>Device & Browser Fingerprint</h2>
-                <div class="counts" id="counts-device"></div>
-            </div>
+            <div class="section-header"><h2>Device & Browser Fingerprint</h2><div class="counts" id="counts-device"></div></div>
+            <div class="section-desc">Baseline info about the device under test. Used to document the testing environment and verify we're on a ChromeOS managed device.</div>
             <div class="test-list" id="list-device"></div>
         </section>
 
+        <section id="section-management">
+            <div class="section-header"><h2>Enterprise Management Indicators</h2><div class="counts" id="counts-management"></div></div>
+            <div class="section-desc">Does the device report being managed? Checks for Linewize Connect extension and other indicators that enterprise policy is actually being enforced.</div>
+            <div class="test-list" id="list-management"></div>
+        </section>
+
         <section id="section-policies">
-            <div class="section-header">
-                <h2>Browser Policy Enforcement</h2>
-                <div class="counts" id="counts-policies"></div>
-            </div>
+            <div class="section-header"><h2>Chrome Policy Enforcement (Inferred)</h2><div class="counts" id="counts-policies"></div></div>
+            <div class="section-desc">Infers whether critical Chrome policies are enforced by testing browser behavior. We can't read policies directly from JS, but we can test whether the behaviors they control are locked down.</div>
             <div class="test-list" id="list-policies"></div>
         </section>
 
         <section id="section-capabilities">
-            <div class="section-header">
-                <h2>Browser Capabilities & API Access</h2>
-                <div class="counts" id="counts-capabilities"></div>
-            </div>
+            <div class="section-header"><h2>Browser Capabilities & Hardware APIs</h2><div class="counts" id="counts-capabilities"></div></div>
+            <div class="section-desc">Hardware-level APIs (USB, Serial, HID, Bluetooth) bypass any network filter entirely. If these are available to student JavaScript, a malicious webpage could talk directly to connected hardware.</div>
             <div class="test-list" id="list-capabilities"></div>
         </section>
 
-        <section id="section-filter">
-            <div class="section-header">
-                <h2>Content Filter Reachability</h2>
-                <div class="counts" id="counts-filter"></div>
-            </div>
-            <div class="test-list" id="list-filter"></div>
+        <section id="section-webrtc">
+            <div class="section-header"><h2>WebRTC & Network Leakage</h2><div class="counts" id="counts-webrtc"></div></div>
+            <div class="section-desc">WebRTC can leak local network IPs, enable peer-to-peer tunneling (a known filter bypass), and typically is not caught by content filters. Chrome policy controls how WebRTC handles IPs.</div>
+            <div class="test-list" id="list-webrtc"></div>
         </section>
 
         <section id="section-bypass">
-            <div class="section-header">
-                <h2>Filter Bypass Methods</h2>
-                <div class="counts" id="counts-bypass"></div>
-            </div>
+            <div class="section-header"><h2>Filter Bypass Methods</h2><div class="counts" id="counts-bypass"></div></div>
+            <div class="section-desc">The bypass vectors that actually work in real K-12 environments. DNS-over-HTTPS is the big one - if students can enable secure DNS in Chrome, Linewize's DNS-level visibility is bypassed entirely.</div>
             <div class="test-list" id="list-bypass"></div>
         </section>
 
-        <section id="section-proxies">
-            <div class="section-header">
-                <h2>Web Proxy / Unblocker Sites</h2>
-                <div class="counts" id="counts-proxies"></div>
-            </div>
-            <div class="test-list" id="list-proxies"></div>
-        </section>
-
-        <section id="section-games">
-            <div class="section-header">
-                <h2>Unblocked Games Sites</h2>
-                <div class="counts" id="counts-games"></div>
-            </div>
-            <div class="test-list" id="list-games"></div>
-        </section>
-
-        <section id="section-social">
-            <div class="section-header">
-                <h2>Social Media & Messaging</h2>
-                <div class="counts" id="counts-social"></div>
-            </div>
-            <div class="test-list" id="list-social"></div>
-        </section>
-
-        <section id="section-streaming">
-            <div class="section-header">
-                <h2>Streaming & Entertainment</h2>
-                <div class="counts" id="counts-streaming"></div>
-            </div>
-            <div class="test-list" id="list-streaming"></div>
+        <section id="section-monitoring">
+            <div class="section-header"><h2>Monitoring & Classroom Tools</h2><div class="counts" id="counts-monitoring"></div></div>
+            <div class="section-desc">Attempts to detect whether classroom monitoring tools (Classwize, GoGuardian, Securly, Hapara) are running. Tests whether student activity is being observed, not just filtered.</div>
+            <div class="test-list" id="list-monitoring"></div>
         </section>
 
         <section id="section-cipa">
-            <div class="section-header">
-                <h2>CIPA Compliance Categories</h2>
-                <div class="counts" id="counts-cipa"></div>
-            </div>
+            <div class="section-header"><h2>CIPA Sanity Check</h2><div class="counts" id="counts-cipa"></div></div>
+            <div class="section-desc">Minimal spot-check to confirm Linewize is handling CIPA categories as expected. Not a comprehensive content filter test - just a sanity check on the most important categories.</div>
             <div class="test-list" id="list-cipa"></div>
         </section>
 
-        <section id="section-ai">
-            <div class="section-header">
-                <h2>AI Tools</h2>
-                <div class="counts" id="counts-ai"></div>
-            </div>
-            <div class="test-list" id="list-ai"></div>
-        </section>
-
-        <section id="section-vpn">
-            <div class="section-header">
-                <h2>VPN & Privacy Services</h2>
-                <div class="counts" id="counts-vpn"></div>
-            </div>
-            <div class="test-list" id="list-vpn"></div>
-        </section>
-
-        <section id="section-cloud-gaming">
-            <div class="section-header">
-                <h2>Cloud Gaming Services</h2>
-                <div class="counts" id="counts-cloud-gaming"></div>
-            </div>
-            <div class="test-list" id="list-cloud-gaming"></div>
-        </section>
-
         <section id="section-internal">
-            <div class="section-header">
-                <h2>Internal Infrastructure Reachability</h2>
-                <div class="counts" id="counts-internal"></div>
-            </div>
+            <div class="section-header"><h2>Internal Infrastructure Reachability</h2><div class="counts" id="counts-internal"></div></div>
+            <div class="section-desc">Tests whether the student Chromebook can reach key internal resources from the browser. Complements the PowerShell network reachability tests with browser-layer visibility.</div>
             <div class="test-list" id="list-internal"></div>
+        </section>
+
+        <section id="section-manual">
+            <div class="section-header"><h2>Manual Verification Checklist</h2><div class="counts" id="counts-manual"></div></div>
+            <div class="section-desc">These checks cannot be automated and require physically interacting with the device. Walk through each one and document the result.</div>
+            <div class="test-list" id="list-manual"></div>
         </section>
 
         <div class="export-area">
             <h2>Raw Findings (for copy/paste)</h2>
-            <textarea id="export-output" readonly placeholder="Click 'Copy Report' after running tests to generate a plain-text report you can paste into a ticket or email."></textarea>
+            <textarea id="export-output" readonly placeholder="Click 'Copy Report' after running tests to generate a plain-text report."></textarea>
         </div>
 
         <footer>
             ICSD Student Chromebook Audit &mdash; Runs entirely client-side &mdash; No data leaves the browser<br>
-            Built as a complement to Test-ICSDStudentReachability.ps1 and the network audit tooling
+            Designed to complement Linewize content filtering with policy and capability auditing
         </footer>
     </div>
 
 <script>
 // ============================================================================
 // TEST DEFINITIONS
-// Each test is an object with:
-//   id: unique identifier
-//   name: short display name
-//   detail: longer description shown below the name
-//   section: which UI section it belongs to
-//   run: async function that returns { status, result }
-//     status: 'good' | 'bad' | 'warn' | 'info'
-//     result: short text shown on the right
 // ============================================================================
 
 const TESTS = [
@@ -462,15 +367,17 @@ const TESTS = [
     {
         id: 'fp-useragent',
         name: 'User Agent',
-        detail: 'Identifies the browser, OS, and often ChromeOS version',
+        detail: 'Confirms ChromeOS and exposes Chrome version',
         section: 'device',
         run: async () => {
             const ua = navigator.userAgent;
             const isChromeOS = /CrOS/.test(ua);
+            let version = 'unknown';
+            const m = ua.match(/Chrome\/([\d.]+)/);
+            if (m) version = m[1];
             return {
-                status: 'info',
-                result: isChromeOS ? 'ChromeOS detected' : 'Not ChromeOS',
-                detail: ua
+                status: isChromeOS ? 'info' : 'warn',
+                result: isChromeOS ? ('ChromeOS, Chrome ' + version) : 'NOT ChromeOS'
             };
         }
     },
@@ -480,22 +387,7 @@ const TESTS = [
         detail: 'OS platform reported by the browser',
         section: 'device',
         run: async () => {
-            return {
-                status: 'info',
-                result: navigator.platform || 'unknown'
-            };
-        }
-    },
-    {
-        id: 'fp-language',
-        name: 'Language',
-        detail: 'Browser language setting',
-        section: 'device',
-        run: async () => {
-            return {
-                status: 'info',
-                result: navigator.language || 'unknown'
-            };
+            return { status: 'info', result: navigator.platform || 'unknown' };
         }
     },
     {
@@ -504,109 +396,164 @@ const TESTS = [
         detail: 'Physical screen dimensions',
         section: 'device',
         run: async () => {
-            return {
-                status: 'info',
-                result: screen.width + 'x' + screen.height
-            };
+            return { status: 'info', result: screen.width + 'x' + screen.height };
         }
     },
     {
         id: 'fp-cores',
         name: 'CPU cores',
-        detail: 'Number of logical processor cores',
+        detail: 'Logical processor count - helps characterize hardware class',
         section: 'device',
         run: async () => {
-            return {
-                status: 'info',
-                result: (navigator.hardwareConcurrency || 'unknown') + ' cores'
-            };
+            return { status: 'info', result: (navigator.hardwareConcurrency || 'unknown') + ' cores' };
         }
     },
     {
         id: 'fp-memory',
         name: 'Device memory',
-        detail: 'Approximate RAM in GB (if exposed)',
+        detail: 'Approximate RAM (if exposed)',
         section: 'device',
         run: async () => {
             const mem = navigator.deviceMemory;
-            return {
-                status: 'info',
-                result: mem ? (mem + ' GB') : 'not exposed'
-            };
-        }
-    },
-    {
-        id: 'fp-online',
-        name: 'Network status',
-        detail: 'Whether the browser reports being online',
-        section: 'device',
-        run: async () => {
-            return {
-                status: navigator.onLine ? 'good' : 'warn',
-                result: navigator.onLine ? 'online' : 'offline'
-            };
+            return { status: 'info', result: mem ? (mem + ' GB') : 'not exposed' };
         }
     },
 
-    // ============ BROWSER POLICY ENFORCEMENT ============
+    // ============ ENTERPRISE MANAGEMENT INDICATORS ============
 
     {
-        id: 'pol-devtools',
-        name: 'Developer Tools availability',
-        detail: 'Whether DevTools can be opened (F12 or Ctrl+Shift+I)',
-        section: 'policies',
+        id: 'mgmt-navigator',
+        name: 'navigator.managed API',
+        detail: 'Chrome exposes navigator.managed on devices under enterprise policy',
+        section: 'management',
         run: async () => {
-            // This is a heuristic - we can't directly detect if DevTools is blocked,
-            // but we can check whether the debugger statement pauses execution.
-            // The presence of DevTools keybind isn't detectable from JS.
-            return {
-                status: 'info',
-                result: 'check manually (F12)',
-                detail: 'JS cannot reliably detect DevTools policy - try pressing F12'
-            };
-        }
-    },
-    {
-        id: 'pol-incognito',
-        name: 'Incognito mode detection',
-        detail: 'Whether the current session is in incognito mode',
-        section: 'policies',
-        run: async () => {
-            // Classic incognito detection via storage quota
-            if ('storage' in navigator && 'estimate' in navigator.storage) {
-                try {
-                    const est = await navigator.storage.estimate();
-                    const quota = est.quota || 0;
-                    const gb = quota / (1024 * 1024 * 1024);
-                    // Incognito typically has a smaller quota, around 120MB or less
-                    const isIncognito = quota < 120 * 1024 * 1024;
-                    return {
-                        status: 'info',
-                        result: isIncognito ? 'incognito likely' : 'regular mode'
-                    };
-                } catch (e) {
-                    return { status: 'info', result: 'detection failed' };
-                }
+            if ('managed' in navigator) {
+                return { status: 'good', result: 'reports managed' };
             }
-            return { status: 'info', result: 'API unavailable' };
+            return { status: 'info', result: 'API unavailable (not a reliable signal)' };
         }
     },
     {
-        id: 'pol-cookies',
-        name: 'Third-party cookies',
-        detail: 'Whether third-party cookies are allowed',
+        id: 'mgmt-linewize-reachable',
+        name: 'Linewize backend reachable',
+        detail: 'Confirms the device can talk to Linewize infrastructure for filtering',
+        section: 'management',
+        run: async () => {
+            return await testFetch('https://www.linewize.com/', 'info');
+        }
+    },
+    {
+        id: 'mgmt-linewize-help',
+        name: 'Linewize help endpoint',
+        detail: 'help.linewize.com reachable',
+        section: 'management',
+        run: async () => {
+            return await testFetch('https://help.linewize.com/', 'info');
+        }
+    },
+    {
+        id: 'mgmt-google-admin',
+        name: 'Google Admin console',
+        detail: 'admin.google.com - network-reachable but student auth should be denied',
+        section: 'management',
+        run: async () => {
+            return await testFetch('https://admin.google.com/', 'info');
+        }
+    },
+
+    // ============ CHROME POLICY ENFORCEMENT (INFERRED) ============
+
+    {
+        id: 'policy-clipboard-read',
+        name: 'Clipboard read permission',
+        detail: 'If clipboard.readText() works without permission prompt, data exfiltration from pages is easier',
+        section: 'policies',
+        run: async () => {
+            if (!navigator.clipboard || !navigator.clipboard.readText) {
+                return { status: 'good', result: 'API unavailable' };
+            }
+            try {
+                await navigator.clipboard.readText();
+                return { status: 'warn', result: 'read succeeded without prompt' };
+            } catch (e) {
+                return { status: 'good', result: 'blocked (requires permission)' };
+            }
+        }
+    },
+    {
+        id: 'policy-notifications',
+        name: 'Notifications permission state',
+        detail: 'DefaultNotificationsSetting policy - notifications should be blocked or prompt by default',
+        section: 'policies',
+        run: async () => {
+            if (!('Notification' in window)) {
+                return { status: 'good', result: 'API unavailable' };
+            }
+            const perm = Notification.permission;
+            if (perm === 'granted') return { status: 'warn', result: 'already granted (unusual)' };
+            if (perm === 'denied')  return { status: 'good', result: 'blocked by policy' };
+            return { status: 'info', result: 'default (will prompt)' };
+        }
+    },
+    {
+        id: 'policy-geolocation',
+        name: 'Geolocation permission state',
+        detail: 'Privacy concern - students should not broadcast location to arbitrary sites',
+        section: 'policies',
+        run: async () => {
+            if (!navigator.permissions) return { status: 'info', result: 'permissions API unavailable' };
+            try {
+                const result = await navigator.permissions.query({ name: 'geolocation' });
+                if (result.state === 'denied') return { status: 'good', result: 'blocked by policy' };
+                return { status: 'info', result: result.state };
+            } catch (e) {
+                return { status: 'info', result: 'query failed' };
+            }
+        }
+    },
+    {
+        id: 'policy-cookies',
+        name: 'Cookies enabled',
+        detail: 'BlockThirdPartyCookies policy',
         section: 'policies',
         run: async () => {
             return {
                 status: navigator.cookieEnabled ? 'info' : 'good',
-                result: navigator.cookieEnabled ? 'enabled' : 'disabled'
+                result: navigator.cookieEnabled ? 'enabled' : 'blocked'
             };
         }
     },
     {
-        id: 'pol-localstorage',
-        name: 'Local storage',
-        detail: 'Whether localStorage is writable',
+        id: 'policy-popups',
+        name: 'Popup blocker',
+        detail: 'DefaultPopupsSetting policy - popups should be blocked by default',
+        section: 'policies',
+        run: async () => {
+            try {
+                const w = window.open('about:blank', '_blank', 'width=1,height=1');
+                if (w) {
+                    w.close();
+                    return { status: 'warn', result: 'popup allowed' };
+                }
+                return { status: 'good', result: 'popup blocked' };
+            } catch (e) {
+                return { status: 'good', result: 'popup blocked' };
+            }
+        }
+    },
+    {
+        id: 'policy-service-workers',
+        name: 'Service workers enabled',
+        detail: 'Service workers run in background; rarely policy-blocked on student devices',
+        section: 'policies',
+        run: async () => {
+            return { status: 'info', result: ('serviceWorker' in navigator) ? 'available' : 'blocked' };
+        }
+    },
+    {
+        id: 'policy-localstorage',
+        name: 'Local storage writable',
+        detail: 'localStorage access - typically allowed',
         section: 'policies',
         run: async () => {
             try {
@@ -618,381 +565,194 @@ const TESTS = [
             }
         }
     },
+
+    // ============ BROWSER CAPABILITIES & HARDWARE APIS ============
+
     {
-        id: 'pol-notifications',
-        name: 'Notification permission',
-        detail: 'Whether websites can request notifications',
-        section: 'policies',
-        run: async () => {
-            if ('Notification' in window) {
-                const perm = Notification.permission;
-                return {
-                    status: 'info',
-                    result: perm
-                };
-            }
-            return { status: 'good', result: 'API blocked' };
-        }
-    },
-    {
-        id: 'pol-geolocation',
-        name: 'Geolocation API',
-        detail: 'Whether the geolocation API is available',
-        section: 'policies',
-        run: async () => {
-            const available = 'geolocation' in navigator;
-            return {
-                status: 'info',
-                result: available ? 'available' : 'blocked'
-            };
-        }
-    },
-    {
-        id: 'pol-camera',
-        name: 'Camera/Mic API',
-        detail: 'Whether getUserMedia API is available',
-        section: 'policies',
-        run: async () => {
-            const available = navigator.mediaDevices && 'getUserMedia' in navigator.mediaDevices;
-            return {
-                status: 'info',
-                result: available ? 'available' : 'blocked'
-            };
-        }
-    },
-    {
-        id: 'pol-clipboard',
-        name: 'Clipboard API',
-        detail: 'Whether programmatic clipboard access is available',
-        section: 'policies',
-        run: async () => {
-            const available = navigator.clipboard && 'readText' in navigator.clipboard;
-            return {
-                status: 'info',
-                result: available ? 'read available' : 'read blocked'
-            };
-        }
-    },
-    {
-        id: 'pol-midi',
-        name: 'Web MIDI API',
-        detail: 'Whether Web MIDI (for musical instruments) is available',
-        section: 'policies',
-        run: async () => {
-            return {
-                status: 'info',
-                result: ('requestMIDIAccess' in navigator) ? 'available' : 'blocked'
-            };
-        }
-    },
-    {
-        id: 'pol-usb',
+        id: 'cap-webusb',
         name: 'WebUSB API',
-        detail: 'Whether WebUSB (direct USB device access) is available',
-        section: 'policies',
+        detail: 'WebUsbAllowDevicesForUrls policy. Direct USB device access from webpages',
+        section: 'capabilities',
         run: async () => {
-            return {
-                status: ('usb' in navigator) ? 'warn' : 'good',
-                result: ('usb' in navigator) ? 'available' : 'blocked'
-            };
+            if ('usb' in navigator && typeof navigator.usb.getDevices === 'function') {
+                return { status: 'bad', result: 'available (should be blocked)' };
+            }
+            return { status: 'good', result: 'blocked by policy' };
         }
     },
     {
-        id: 'pol-bluetooth',
-        name: 'Web Bluetooth API',
-        detail: 'Whether Web Bluetooth is available',
-        section: 'policies',
-        run: async () => {
-            return {
-                status: 'info',
-                result: ('bluetooth' in navigator) ? 'available' : 'blocked'
-            };
-        }
-    },
-    {
-        id: 'pol-serial',
+        id: 'cap-webserial',
         name: 'Web Serial API',
-        detail: 'Whether Web Serial (direct serial port access) is available',
-        section: 'policies',
-        run: async () => {
-            return {
-                status: ('serial' in navigator) ? 'warn' : 'good',
-                result: ('serial' in navigator) ? 'available' : 'blocked'
-            };
-        }
-    },
-    {
-        id: 'pol-serviceworker',
-        name: 'Service Workers',
-        detail: 'Whether service workers (for offline apps) can be registered',
-        section: 'policies',
-        run: async () => {
-            return {
-                status: 'info',
-                result: ('serviceWorker' in navigator) ? 'enabled' : 'disabled'
-            };
-        }
-    },
-
-    // ============ BROWSER CAPABILITIES ============
-
-    {
-        id: 'cap-webrtc',
-        name: 'WebRTC',
-        detail: 'WebRTC is sometimes used for peer-to-peer tunneling and IP leaks',
+        detail: 'SerialAllowAllPortsForUrls policy. Direct serial port access - can talk to hardware',
         section: 'capabilities',
         run: async () => {
-            return {
-                status: 'info',
-                result: ('RTCPeerConnection' in window) ? 'available' : 'blocked'
-            };
-        }
-    },
-    {
-        id: 'cap-webrtc-leak',
-        name: 'WebRTC local IP leak',
-        detail: 'Whether WebRTC reveals the local IP (privacy leak if enabled)',
-        section: 'capabilities',
-        run: async () => {
-            if (!('RTCPeerConnection' in window)) {
-                return { status: 'good', result: 'WebRTC blocked' };
+            if ('serial' in navigator && typeof navigator.serial.getPorts === 'function') {
+                return { status: 'bad', result: 'available (should be blocked)' };
             }
-            return new Promise((resolve) => {
-                try {
-                    const pc = new RTCPeerConnection({iceServers: []});
-                    pc.createDataChannel('');
-                    pc.createOffer().then(o => pc.setLocalDescription(o));
-                    const ips = new Set();
-                    const timer = setTimeout(() => {
-                        pc.close();
-                        const ipList = Array.from(ips);
-                        if (ipList.length > 0) {
-                            resolve({ status: 'warn', result: 'leaked: ' + ipList.join(', ') });
-                        } else {
-                            resolve({ status: 'good', result: 'no leak detected' });
-                        }
-                    }, 1500);
-                    pc.onicecandidate = (e) => {
-                        if (e.candidate && e.candidate.candidate) {
-                            const m = e.candidate.candidate.match(/([0-9a-f.:]+)/g);
-                            if (m) m.forEach(ip => {
-                                if (/^(\d+\.\d+\.\d+\.\d+)$/.test(ip) && !ip.startsWith('0.')) {
-                                    ips.add(ip);
-                                }
-                            });
-                        }
-                    };
-                } catch (e) {
-                    resolve({ status: 'info', result: 'error: ' + e.message });
-                }
-            });
+            return { status: 'good', result: 'blocked by policy' };
         }
     },
     {
-        id: 'cap-downloads',
-        name: 'File download test',
-        detail: 'Whether the browser can initiate downloads (via Blob URL)',
+        id: 'cap-webhid',
+        name: 'WebHID API',
+        detail: 'Direct HID device access - hardware attack surface',
         section: 'capabilities',
         run: async () => {
-            try {
-                const blob = new Blob(['test'], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                URL.revokeObjectURL(url);
-                return { status: 'info', result: 'enabled' };
-            } catch (e) {
-                return { status: 'good', result: 'blocked' };
+            if ('hid' in navigator && typeof navigator.hid.getDevices === 'function') {
+                return { status: 'bad', result: 'available (should be blocked)' };
             }
+            return { status: 'good', result: 'blocked by policy' };
+        }
+    },
+    {
+        id: 'cap-bluetooth',
+        name: 'Web Bluetooth API',
+        detail: 'DefaultWebBluetoothGuardSetting - pair with Bluetooth from webpages',
+        section: 'capabilities',
+        run: async () => {
+            if ('bluetooth' in navigator && typeof navigator.bluetooth.requestDevice === 'function') {
+                return { status: 'warn', result: 'available' };
+            }
+            return { status: 'good', result: 'blocked by policy' };
+        }
+    },
+    {
+        id: 'cap-midi',
+        name: 'Web MIDI API',
+        detail: 'Low risk but worth noting',
+        section: 'capabilities',
+        run: async () => {
+            return { status: 'info', result: ('requestMIDIAccess' in navigator) ? 'available' : 'blocked' };
+        }
+    },
+    {
+        id: 'cap-camera',
+        name: 'Camera/Microphone API',
+        detail: 'getUserMedia availability - legitimately needed for video calls',
+        section: 'capabilities',
+        run: async () => {
+            const hasUM = navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function';
+            return { status: 'info', result: hasUM ? 'available (needs prompt)' : 'blocked' };
+        }
+    },
+    {
+        id: 'cap-screen-capture',
+        name: 'Screen capture API',
+        detail: 'getDisplayMedia - can capture the entire screen',
+        section: 'capabilities',
+        run: async () => {
+            const hasDM = navigator.mediaDevices && typeof navigator.mediaDevices.getDisplayMedia === 'function';
+            return { status: 'info', result: hasDM ? 'available (needs prompt)' : 'blocked' };
+        }
+    },
+    {
+        id: 'cap-filesystem',
+        name: 'File System Access API',
+        detail: 'showOpenFilePicker / showSaveFilePicker - read/write files on the device',
+        section: 'capabilities',
+        run: async () => {
+            const hasFS = 'showOpenFilePicker' in window;
+            return { status: hasFS ? 'warn' : 'good', result: hasFS ? 'available' : 'blocked' };
         }
     },
     {
         id: 'cap-wasm',
         name: 'WebAssembly',
-        detail: 'Whether WASM can run (used by some apps but also by some exploits)',
+        detail: 'Enables compiled code execution in browser - attack surface',
         section: 'capabilities',
         run: async () => {
-            return {
-                status: 'info',
-                result: ('WebAssembly' in window) ? 'enabled' : 'disabled'
-            };
-        }
-    },
-    {
-        id: 'cap-shareapi',
-        name: 'Web Share API',
-        detail: 'Whether the Web Share API is available',
-        section: 'capabilities',
-        run: async () => {
-            return {
-                status: 'info',
-                result: ('share' in navigator) ? 'available' : 'blocked'
-            };
-        }
-    },
-    {
-        id: 'cap-managed',
-        name: 'Enterprise managed',
-        detail: 'Whether Chrome reports being managed by an enterprise',
-        section: 'capabilities',
-        run: async () => {
-            // Chrome exposes navigator.managed for managed devices (experimental)
-            // Also try reading the enterprise policy via DevicePolicy API if available
-            if ('managed' in navigator) {
-                return { status: 'good', result: 'reported managed' };
-            }
-            return {
-                status: 'info',
-                result: 'not exposed to JS',
-                detail: 'JS cannot directly read enterprise policies - check chrome://policy'
-            };
+            return { status: 'info', result: ('WebAssembly' in window) ? 'enabled' : 'disabled' };
         }
     },
 
-    // ============ CONTENT FILTER REACHABILITY ============
-    // These tests attempt to load content from various categories of sites.
-    // Using mode: 'no-cors' lets us detect reachability without CORS errors.
+    // ============ WEBRTC & NETWORK LEAKAGE ============
 
     {
-        id: 'filter-wikipedia',
-        name: 'Wikipedia',
-        detail: 'Expected to be reachable - educational content',
-        section: 'filter',
+        id: 'webrtc-available',
+        name: 'WebRTC available',
+        detail: 'RTCPeerConnection constructor',
+        section: 'webrtc',
         run: async () => {
-            return await testFetch('https://en.wikipedia.org/wiki/Main_Page', 'good');
+            if ('RTCPeerConnection' in window) return { status: 'info', result: 'available' };
+            return { status: 'good', result: 'blocked entirely' };
         }
     },
     {
-        id: 'filter-khan',
-        name: 'Khan Academy',
-        detail: 'Expected to be reachable - educational content',
-        section: 'filter',
+        id: 'webrtc-local-ip',
+        name: 'Local IP leak via WebRTC',
+        detail: 'WebRtcLocalIpsAllowedUrls policy - if local IPs leak, attackers learn network topology from any page',
+        section: 'webrtc',
         run: async () => {
-            return await testFetch('https://www.khanacademy.org/', 'good');
+            if (!('RTCPeerConnection' in window)) return { status: 'good', result: 'WebRTC blocked' };
+            return new Promise((resolve) => {
+                try {
+                    const pc = new RTCPeerConnection({ iceServers: [] });
+                    pc.createDataChannel('');
+                    pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => {});
+                    const ips = new Set();
+                    setTimeout(() => {
+                        pc.close();
+                        const ipList = Array.from(ips);
+                        if (ipList.length > 0) {
+                            resolve({ status: 'bad', result: 'LEAKS: ' + ipList.slice(0, 2).join(', ') });
+                        } else {
+                            resolve({ status: 'good', result: 'no local IP leak' });
+                        }
+                    }, 2000);
+                    pc.onicecandidate = (e) => {
+                        if (e.candidate && e.candidate.candidate) {
+                            const m = e.candidate.candidate.match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/g);
+                            if (m) m.forEach(ip => {
+                                if (!ip.startsWith('0.') && ip !== '255.255.255.255') ips.add(ip);
+                            });
+                        }
+                    };
+                } catch (e) {
+                    resolve({ status: 'info', result: 'test failed' });
+                }
+            });
         }
     },
     {
-        id: 'filter-youtube',
-        name: 'YouTube',
-        detail: 'Expected to be reachable or restricted-mode',
-        section: 'filter',
+        id: 'webrtc-stun-external',
+        name: 'External STUN reachable',
+        detail: 'Can WebRTC reach public STUN? Needed for P2P tunneling bypass',
+        section: 'webrtc',
         run: async () => {
-            return await testFetch('https://www.youtube.com/', 'info');
-        }
-    },
-    {
-        id: 'filter-reddit',
-        name: 'Reddit',
-        detail: 'Common category: social - check whether blocked',
-        section: 'filter',
-        run: async () => {
-            return await testFetch('https://www.reddit.com/', 'info');
-        }
-    },
-    {
-        id: 'filter-twitter',
-        name: 'X / Twitter',
-        detail: 'Common category: social - check whether blocked',
-        section: 'filter',
-        run: async () => {
-            return await testFetch('https://x.com/', 'info');
-        }
-    },
-    {
-        id: 'filter-discord',
-        name: 'Discord',
-        detail: 'Common category: chat/gaming - check whether blocked',
-        section: 'filter',
-        run: async () => {
-            return await testFetch('https://discord.com/', 'info');
-        }
-    },
-    {
-        id: 'filter-steam',
-        name: 'Steam',
-        detail: 'Common category: gaming - check whether blocked',
-        section: 'filter',
-        run: async () => {
-            return await testFetch('https://store.steampowered.com/', 'info');
-        }
-    },
-    {
-        id: 'filter-coolmath',
-        name: 'Coolmath Games',
-        detail: 'Common category: gaming - often reachable in schools',
-        section: 'filter',
-        run: async () => {
-            return await testFetch('https://www.coolmathgames.com/', 'info');
-        }
-    },
-    {
-        id: 'filter-twitch',
-        name: 'Twitch',
-        detail: 'Common category: streaming - check whether blocked',
-        section: 'filter',
-        run: async () => {
-            return await testFetch('https://www.twitch.tv/', 'info');
-        }
-    },
-    {
-        id: 'filter-netflix',
-        name: 'Netflix',
-        detail: 'Common category: streaming - check whether blocked',
-        section: 'filter',
-        run: async () => {
-            return await testFetch('https://www.netflix.com/', 'info');
+            if (!('RTCPeerConnection' in window)) return { status: 'good', result: 'WebRTC blocked' };
+            return new Promise((resolve) => {
+                try {
+                    const pc = new RTCPeerConnection({
+                        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                    });
+                    pc.createDataChannel('');
+                    pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => {});
+                    let gotSrflx = false;
+                    setTimeout(() => {
+                        pc.close();
+                        resolve({
+                            status: gotSrflx ? 'warn' : 'good',
+                            result: gotSrflx ? 'STUN reachable (P2P possible)' : 'no STUN response'
+                        });
+                    }, 3000);
+                    pc.onicecandidate = (e) => {
+                        if (e.candidate && e.candidate.candidate && /srflx/.test(e.candidate.candidate)) {
+                            gotSrflx = true;
+                        }
+                    };
+                } catch (e) {
+                    resolve({ status: 'info', result: 'test failed' });
+                }
+            });
         }
     },
 
     // ============ FILTER BYPASS METHODS ============
 
     {
-        id: 'bypass-googletranslate',
-        name: 'Google Translate proxy',
-        detail: 'Google Translate can be used as a proxy to view blocked sites',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://translate.google.com/', 'info');
-        }
-    },
-    {
-        id: 'bypass-webcache',
-        name: 'Google cached pages',
-        detail: 'Cached versions of pages can sometimes bypass filtering',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://webcache.googleusercontent.com/', 'info');
-        }
-    },
-    {
-        id: 'bypass-archive',
-        name: 'Wayback Machine',
-        detail: 'Archived pages can sometimes bypass filtering',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://web.archive.org/', 'info');
-        }
-    },
-    {
-        id: 'bypass-duckduckgo',
-        name: 'DuckDuckGo',
-        detail: 'Alternative search that may expose blocked content via image search',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://duckduckgo.com/', 'info');
-        }
-    },
-    {
-        id: 'bypass-brave',
-        name: 'Brave Search',
-        detail: 'Alternative search engine',
-        section: 'bypass',
-        run: async () => {
-            return await testFetch('https://search.brave.com/', 'info');
-        }
-    },
-    {
-        id: 'bypass-cloudflare-doh',
-        name: 'Cloudflare DoH (fetch)',
-        detail: 'DNS over HTTPS - can bypass DNS-based filtering entirely',
+        id: 'bypass-doh-cloudflare',
+        name: 'Cloudflare DoH endpoint',
+        detail: 'If reachable AND Chrome DoH policy is not locked, students can switch to Cloudflare DNS and bypass Linewize DNS visibility',
         section: 'bypass',
         run: async () => {
             return await testFetch('https://cloudflare-dns.com/dns-query?name=example.com&type=A', 'bad', {
@@ -1001,812 +761,177 @@ const TESTS = [
         }
     },
     {
-        id: 'bypass-google-doh',
-        name: 'Google DoH (fetch)',
-        detail: 'DNS over HTTPS - can bypass DNS-based filtering entirely',
+        id: 'bypass-doh-google',
+        name: 'Google DoH endpoint',
+        detail: 'dns.google resolver - another bypass target',
         section: 'bypass',
         run: async () => {
             return await testFetch('https://dns.google/resolve?name=example.com&type=A', 'bad');
         }
     },
     {
-        id: 'bypass-onion-router',
-        name: 'Tor Project site',
-        detail: 'Reachability to tor project - if reachable, students can learn about Tor',
+        id: 'bypass-doh-quad9',
+        name: 'Quad9 DoH endpoint',
+        detail: 'Another public DoH provider',
         section: 'bypass',
         run: async () => {
-            return await testFetch('https://www.torproject.org/', 'warn');
+            return await testFetch('https://dns.quad9.net/dns-query?name=example.com', 'bad', {
+                Accept: 'application/dns-json'
+            });
         }
     },
     {
-        id: 'bypass-protonvpn',
-        name: 'ProtonVPN',
-        detail: 'Reachability to VPN service homepage',
+        id: 'bypass-doh-nextdns',
+        name: 'NextDNS reachable',
+        detail: 'NextDNS is a popular privacy-focused DoH provider students use',
         section: 'bypass',
         run: async () => {
-            return await testFetch('https://protonvpn.com/', 'warn');
+            return await testFetch('https://dns.nextdns.io/', 'bad');
         }
     },
     {
-        id: 'bypass-croxyproxy',
-        name: 'CroxyProxy (web proxy)',
-        detail: 'Common web-based proxy used by students to bypass filters',
+        id: 'bypass-google-translate',
+        name: 'Google Translate proxy',
+        detail: 'Documented bypass - translate.google.com can load blocked pages since Google is rarely blocked',
         section: 'bypass',
         run: async () => {
-            return await testFetch('https://www.croxyproxy.com/', 'bad');
+            return await testFetch('https://translate.google.com/', 'warn');
         }
     },
     {
-        id: 'bypass-hideme',
-        name: 'hide.me (web proxy)',
-        detail: 'Common web-based proxy used by students to bypass filters',
+        id: 'bypass-google-cache',
+        name: 'Google cached pages',
+        detail: 'webcache.googleusercontent.com - cached versions of pages',
         section: 'bypass',
         run: async () => {
-            return await testFetch('https://hide.me/', 'bad');
+            return await testFetch('https://webcache.googleusercontent.com/', 'warn');
+        }
+    },
+    {
+        id: 'bypass-wayback',
+        name: 'Wayback Machine',
+        detail: 'Archived pages via web.archive.org can bypass filtering',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://web.archive.org/', 'warn');
+        }
+    },
+    {
+        id: 'bypass-github-raw',
+        name: 'GitHub raw content',
+        detail: 'raw.githubusercontent.com - hosts unpacked extensions for sideloading (Linewize explicitly calls this out as a bypass vector)',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://raw.githubusercontent.com/', 'warn');
+        }
+    },
+    {
+        id: 'bypass-chrome-webstore',
+        name: 'Chrome Web Store',
+        detail: 'Students can browse the Web Store even if they cannot install from it',
+        section: 'bypass',
+        run: async () => {
+            return await testFetch('https://chromewebstore.google.com/', 'info');
         }
     },
 
-    // ============ WEB PROXY / UNBLOCKER SITES ============
-    // These are specific proxy sites that show up repeatedly in student
-    // bypass guides. Each one is a known-bad destination for student
-    // devices - reachable means the filter missed it.
+    // ============ MONITORING & CLASSROOM TOOLS ============
 
     {
-        id: 'proxy-genmirror',
-        name: 'Gen Mirror',
-        detail: 'Web proxy frequently recommended in student bypass guides',
-        section: 'proxies',
+        id: 'monitoring-linewize',
+        name: 'Linewize Connect extension',
+        detail: 'Tries to detect the Linewize Connect extension via known extension IDs',
+        section: 'monitoring',
         run: async () => {
-            return await testFetch('https://www.genmirror.com/', 'bad');
+            // Note: chrome-extension:// fetches from a page will typically fail with "Failed to fetch"
+            // regardless of whether the extension exists - we can't reliably detect extensions this way.
+            // The most reliable manual check is chrome://extensions.
+            return { status: 'info', result: 'verify via chrome://extensions manually' };
         }
     },
     {
-        id: 'proxy-kproxy',
-        name: 'KProxy',
-        detail: 'Long-running web proxy with browser extension, popular with students',
-        section: 'proxies',
+        id: 'monitoring-classwize',
+        name: 'Classwize presence',
+        detail: 'Linewize Classwize is the classroom teacher control tool',
+        section: 'monitoring',
         run: async () => {
-            return await testFetch('https://www.kproxy.com/', 'bad');
+            return { status: 'info', result: 'verify via chrome://extensions manually' };
         }
     },
     {
-        id: 'proxy-hidester',
-        name: 'Hidester',
-        detail: 'Free/premium web proxy service',
-        section: 'proxies',
+        id: 'monitoring-goguardian',
+        name: 'GoGuardian presence',
+        detail: 'Alternative classroom monitoring tool',
+        section: 'monitoring',
         run: async () => {
-            return await testFetch('https://hidester.com/', 'bad');
-        }
-    },
-    {
-        id: 'proxy-proxysite',
-        name: 'ProxySite.com',
-        detail: 'Free web proxy with server selection',
-        section: 'proxies',
-        run: async () => {
-            return await testFetch('https://www.proxysite.com/', 'bad');
-        }
-    },
-    {
-        id: 'proxy-filterbypass',
-        name: 'FilterBypass',
-        detail: 'Proxy specifically marketed for school filter bypass',
-        section: 'proxies',
-        run: async () => {
-            return await testFetch('https://www.filterbypass.me/', 'bad');
-        }
-    },
-    {
-        id: 'proxy-proxfree',
-        name: 'ProxFree',
-        detail: 'Web proxy with JavaScript/cookie toggles',
-        section: 'proxies',
-        run: async () => {
-            return await testFetch('https://www.proxfree.com/', 'bad');
-        }
-    },
-    {
-        id: 'proxy-blockaway',
-        name: 'BlockAway',
-        detail: 'Web proxy specifically marketed for schools and workplaces',
-        section: 'proxies',
-        run: async () => {
-            return await testFetch('https://www.blockaway.net/', 'bad');
-        }
-    },
-    {
-        id: 'proxy-vpnproxysite',
-        name: 'VPN Proxy Site',
-        detail: 'Web-based proxy with browser interface',
-        section: 'proxies',
-        run: async () => {
-            return await testFetch('https://vpnproxy.site/', 'bad');
-        }
-    },
-    {
-        id: 'proxy-foreverproxy',
-        name: 'Forever Proxy',
-        detail: 'Web proxy with encrypted connections',
-        section: 'proxies',
-        run: async () => {
-            return await testFetch('https://www.foreverproxy.com/', 'bad');
-        }
-    },
-    {
-        id: 'proxy-4everproxy',
-        name: '4everproxy',
-        detail: 'Another commonly-used free web proxy',
-        section: 'proxies',
-        run: async () => {
-            return await testFetch('https://www.4everproxy.com/', 'bad');
-        }
-    },
-    {
-        id: 'proxy-bitly',
-        name: 'bit.ly (URL shortener)',
-        detail: 'URL shorteners sometimes bypass domain-based blocklists',
-        section: 'proxies',
-        run: async () => {
-            return await testFetch('https://bitly.com/', 'warn');
-        }
-    },
-    {
-        id: 'proxy-tinyurl',
-        name: 'TinyURL',
-        detail: 'URL shortener - can be used to obfuscate blocked URLs',
-        section: 'proxies',
-        run: async () => {
-            return await testFetch('https://tinyurl.com/', 'warn');
-        }
-    },
-    {
-        id: 'proxy-isgd',
-        name: 'is.gd (URL shortener)',
-        detail: 'URL shortener - can be used to obfuscate blocked URLs',
-        section: 'proxies',
-        run: async () => {
-            return await testFetch('https://is.gd/', 'warn');
+            return { status: 'info', result: 'verify via chrome://extensions manually' };
         }
     },
 
-    // ============ UNBLOCKED GAMES SITES ============
-    // These are the #1 category students actually use. Many are hosted
-    // on sites.google.com which makes them hard to block without breaking
-    // legitimate educational Google Sites content.
+    // ============ CIPA SANITY CHECK ============
 
     {
-        id: 'games-classroom6x',
-        name: 'Classroom 6x',
-        detail: 'Major unblocked games hub, very popular with K-12 students',
-        section: 'games',
+        id: 'cipa-adult',
+        name: 'Adult content category',
+        detail: 'Sanity check - Pornhub should definitely be blocked. Any failure here is a CIPA compliance issue.',
+        section: 'cipa',
         run: async () => {
-            return await testFetch('https://classroom6x.com/', 'bad');
+            // Use the cipa version of testFetch that reports "reachable" as bad
+            return await testFetchCipa('https://www.pornhub.com/');
         }
     },
-    {
-        id: 'games-tyrone',
-        name: "Tyrone's Unblocked Games",
-        detail: "One of the most popular 'unblocked games' aggregators",
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://sites.google.com/site/tyronesgames/', 'bad');
-        }
-    },
-    {
-        id: 'games-unblocked66',
-        name: 'Unblocked Games 66',
-        detail: 'Long-running unblocked games site',
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://sites.google.com/site/unblockedgames66/', 'bad');
-        }
-    },
-    {
-        id: 'games-unblocked76',
-        name: 'Unblocked Games 76',
-        detail: 'Another popular games aggregator',
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://sites.google.com/site/unblockedgames76/', 'bad');
-        }
-    },
-    {
-        id: 'games-unblocked77',
-        name: 'Unblocked Games 77',
-        detail: 'Another variant in the unblocked-games family',
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://sites.google.com/site/unblockedgames77play/', 'bad');
-        }
-    },
-    {
-        id: 'games-freezenova',
-        name: 'Freezenova',
-        detail: 'Game site commonly used to bypass school filters',
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://www.freezenova.com/', 'bad');
-        }
-    },
-    {
-        id: 'games-mathsspot',
-        name: 'Mathsspot (disguised games)',
-        detail: 'Game site that disguises itself as a math resource',
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://mathsspot.com/', 'bad');
-        }
-    },
-    {
-        id: 'games-coolmath',
-        name: 'Coolmath Games',
-        detail: 'Usually allowed (educational), but worth confirming',
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://www.coolmathgames.com/', 'info');
-        }
-    },
-    {
-        id: 'games-hoodamath',
-        name: 'Hooda Math',
-        detail: 'Usually allowed (educational) but also hosts non-math games',
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://www.hoodamath.com/', 'info');
-        }
-    },
-    {
-        id: 'games-krunker',
-        name: 'Krunker.io',
-        detail: 'Browser FPS game popular in schools',
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://krunker.io/', 'bad');
-        }
-    },
-    {
-        id: 'games-slitherio',
-        name: 'Slither.io',
-        detail: 'Browser multiplayer snake game',
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://slither.io/', 'bad');
-        }
-    },
-    {
-        id: 'games-agario',
-        name: 'Agar.io',
-        detail: 'Browser multiplayer blob game',
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://agar.io/', 'bad');
-        }
-    },
-    {
-        id: 'games-skribbl',
-        name: 'Skribbl.io',
-        detail: 'Multiplayer drawing game, huge with middle schoolers',
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://skribbl.io/', 'bad');
-        }
-    },
-    {
-        id: 'games-2048',
-        name: '2048',
-        detail: 'Classic puzzle, often allowed but worth confirming',
-        section: 'games',
-        run: async () => {
-            return await testFetch('https://play2048.co/', 'info');
-        }
-    },
-
-    // ============ SOCIAL MEDIA & MESSAGING ============
-
-    {
-        id: 'social-instagram',
-        name: 'Instagram',
-        detail: 'Social media - typically blocked for students',
-        section: 'social',
-        run: async () => {
-            return await testFetch('https://www.instagram.com/', 'bad');
-        }
-    },
-    {
-        id: 'social-tiktok',
-        name: 'TikTok',
-        detail: 'Short-form video - typically blocked and a major CIPA concern',
-        section: 'social',
-        run: async () => {
-            return await testFetch('https://www.tiktok.com/', 'bad');
-        }
-    },
-    {
-        id: 'social-snapchat',
-        name: 'Snapchat Web',
-        detail: 'Messaging - typically blocked for students',
-        section: 'social',
-        run: async () => {
-            return await testFetch('https://web.snapchat.com/', 'bad');
-        }
-    },
-    {
-        id: 'social-facebook',
-        name: 'Facebook',
-        detail: 'Social media - typically blocked for students',
-        section: 'social',
-        run: async () => {
-            return await testFetch('https://www.facebook.com/', 'bad');
-        }
-    },
-    {
-        id: 'social-omegle-alt',
-        name: 'Chatroulette',
-        detail: 'Anonymous video chat - major CIPA concern, should be blocked',
-        section: 'social',
-        run: async () => {
-            return await testFetch('https://chatroulette.com/', 'bad');
-        }
-    },
-    {
-        id: 'social-emeraldchat',
-        name: 'Emerald Chat',
-        detail: 'Anonymous chat service - CIPA concern, should be blocked',
-        section: 'social',
-        run: async () => {
-            return await testFetch('https://emeraldchat.com/', 'bad');
-        }
-    },
-    {
-        id: 'social-telegram',
-        name: 'Telegram Web',
-        detail: 'Messaging app web version - often blocked',
-        section: 'social',
-        run: async () => {
-            return await testFetch('https://web.telegram.org/', 'bad');
-        }
-    },
-    {
-        id: 'social-whatsapp',
-        name: 'WhatsApp Web',
-        detail: 'Messaging - often blocked for students',
-        section: 'social',
-        run: async () => {
-            return await testFetch('https://web.whatsapp.com/', 'bad');
-        }
-    },
-    {
-        id: 'social-tumblr',
-        name: 'Tumblr',
-        detail: 'Blogging platform with mature content - typically blocked',
-        section: 'social',
-        run: async () => {
-            return await testFetch('https://www.tumblr.com/', 'bad');
-        }
-    },
-    {
-        id: 'social-4chan',
-        name: '4chan',
-        detail: 'Anonymous imageboard - should be blocked (adult content)',
-        section: 'social',
-        run: async () => {
-            return await testFetch('https://www.4chan.org/', 'bad');
-        }
-    },
-
-    // ============ STREAMING & ENTERTAINMENT ============
-
-    {
-        id: 'stream-hulu',
-        name: 'Hulu',
-        detail: 'Video streaming - typically blocked to preserve bandwidth',
-        section: 'streaming',
-        run: async () => {
-            return await testFetch('https://www.hulu.com/', 'info');
-        }
-    },
-    {
-        id: 'stream-disneyplus',
-        name: 'Disney+',
-        detail: 'Video streaming - typically blocked',
-        section: 'streaming',
-        run: async () => {
-            return await testFetch('https://www.disneyplus.com/', 'info');
-        }
-    },
-    {
-        id: 'stream-crunchyroll',
-        name: 'Crunchyroll',
-        detail: 'Anime streaming - commonly accessed by students',
-        section: 'streaming',
-        run: async () => {
-            return await testFetch('https://www.crunchyroll.com/', 'info');
-        }
-    },
-    {
-        id: 'stream-kick',
-        name: 'Kick.com',
-        detail: 'Twitch alternative - less commonly filtered, worth checking',
-        section: 'streaming',
-        run: async () => {
-            return await testFetch('https://kick.com/', 'info');
-        }
-    },
-    {
-        id: 'stream-spotify',
-        name: 'Spotify',
-        detail: 'Music streaming - often allowed, worth confirming',
-        section: 'streaming',
-        run: async () => {
-            return await testFetch('https://open.spotify.com/', 'info');
-        }
-    },
-    {
-        id: 'stream-soundcloud',
-        name: 'SoundCloud',
-        detail: 'Music streaming',
-        section: 'streaming',
-        run: async () => {
-            return await testFetch('https://soundcloud.com/', 'info');
-        }
-    },
-    {
-        id: 'stream-pandora',
-        name: 'Pandora',
-        detail: 'Music streaming',
-        section: 'streaming',
-        run: async () => {
-            return await testFetch('https://www.pandora.com/', 'info');
-        }
-    },
-
-    // ============ CIPA COMPLIANCE CATEGORIES ============
-    // These tests check whether content that CIPA requires schools to block
-    // is actually blocked. Any of these being reachable is a compliance issue.
-    // Note: we test known-safe landing pages, not actual explicit content.
-
     {
         id: 'cipa-gambling',
-        name: 'Online casino (bet365)',
-        detail: 'Gambling site - should be blocked per CIPA',
+        name: 'Gambling category',
+        detail: 'CIPA requires blocking gambling - bet365 as a representative sample',
         section: 'cipa',
         run: async () => {
-            return await testFetch('https://www.bet365.com/', 'bad');
-        }
-    },
-    {
-        id: 'cipa-poker',
-        name: 'PokerStars',
-        detail: 'Gambling/poker - should be blocked per CIPA',
-        section: 'cipa',
-        run: async () => {
-            return await testFetch('https://www.pokerstars.com/', 'bad');
-        }
-    },
-    {
-        id: 'cipa-weapons',
-        name: 'Weapons retailer',
-        detail: 'Weapons/ammunition retailer - typically blocked in K-12',
-        section: 'cipa',
-        run: async () => {
-            return await testFetch('https://www.guns.com/', 'warn');
-        }
-    },
-    {
-        id: 'cipa-drugs',
-        name: 'Cannabis retailer',
-        detail: 'Drug-related content - typically blocked in K-12',
-        section: 'cipa',
-        run: async () => {
-            return await testFetch('https://www.leafly.com/', 'warn');
+            return await testFetchCipa('https://www.bet365.com/');
         }
     },
     {
         id: 'cipa-piracy',
-        name: 'The Pirate Bay',
-        detail: 'Piracy site - should be blocked per AUP',
+        name: 'Piracy category',
+        detail: 'Piracy sites should be blocked - thepiratebay.org as a representative sample',
         section: 'cipa',
         run: async () => {
-            return await testFetch('https://thepiratebay.org/', 'bad');
+            return await testFetchCipa('https://thepiratebay.org/');
         }
     },
     {
-        id: 'cipa-torrent',
-        name: '1337x (torrent site)',
-        detail: 'Piracy/torrent search - should be blocked',
+        id: 'cipa-anonymizer',
+        name: 'Anonymizer category',
+        detail: 'Proxy services must be blocked - CroxyProxy is the most common student-facing anonymizer',
         section: 'cipa',
         run: async () => {
-            return await testFetch('https://1337x.to/', 'bad');
+            return await testFetchCipa('https://www.croxyproxy.com/');
         }
     },
     {
-        id: 'cipa-dating',
-        name: 'Tinder (dating)',
-        detail: 'Dating site - inappropriate for K-12, should be blocked',
+        id: 'cipa-weapons',
+        name: 'Weapons category',
+        detail: 'Weapons retailer (guns.com) - typically blocked in K-12',
         section: 'cipa',
         run: async () => {
-            return await testFetch('https://tinder.com/', 'bad');
-        }
-    },
-    {
-        id: 'cipa-selfharm-info',
-        name: 'Self-harm community (Reddit)',
-        detail: 'Specific Reddit community - Reddit is often blocked but sub-paths leak',
-        section: 'cipa',
-        run: async () => {
-            return await testFetch('https://old.reddit.com/r/selfharm/', 'bad');
-        }
-    },
-
-    // ============ AI TOOLS ============
-    // Districts are wildly inconsistent here. Some allow, some block, some
-    // require specific educational licensing. Worth knowing what's reachable
-    // to have a conversation about policy.
-
-    {
-        id: 'ai-chatgpt',
-        name: 'ChatGPT',
-        detail: 'OpenAI ChatGPT - policy varies by district',
-        section: 'ai',
-        run: async () => {
-            return await testFetch('https://chat.openai.com/', 'info');
-        }
-    },
-    {
-        id: 'ai-claude',
-        name: 'Claude',
-        detail: 'Anthropic Claude - policy varies by district',
-        section: 'ai',
-        run: async () => {
-            return await testFetch('https://claude.ai/', 'info');
-        }
-    },
-    {
-        id: 'ai-gemini',
-        name: 'Google Gemini',
-        detail: 'Google Gemini - often allowed via Google Workspace',
-        section: 'ai',
-        run: async () => {
-            return await testFetch('https://gemini.google.com/', 'info');
-        }
-    },
-    {
-        id: 'ai-copilot',
-        name: 'Microsoft Copilot',
-        detail: 'Microsoft Copilot web interface',
-        section: 'ai',
-        run: async () => {
-            return await testFetch('https://copilot.microsoft.com/', 'info');
-        }
-    },
-    {
-        id: 'ai-perplexity',
-        name: 'Perplexity',
-        detail: 'AI-powered search engine',
-        section: 'ai',
-        run: async () => {
-            return await testFetch('https://www.perplexity.ai/', 'info');
-        }
-    },
-    {
-        id: 'ai-characterai',
-        name: 'Character.AI',
-        detail: 'AI roleplay/chat - CIPA concern, often blocked for minors',
-        section: 'ai',
-        run: async () => {
-            return await testFetch('https://character.ai/', 'bad');
-        }
-    },
-    {
-        id: 'ai-huggingface',
-        name: 'Hugging Face',
-        detail: 'AI model hub - advanced but typically reachable',
-        section: 'ai',
-        run: async () => {
-            return await testFetch('https://huggingface.co/', 'info');
-        }
-    },
-    {
-        id: 'ai-replicate',
-        name: 'Replicate',
-        detail: 'AI model hosting platform',
-        section: 'ai',
-        run: async () => {
-            return await testFetch('https://replicate.com/', 'info');
-        }
-    },
-
-    // ============ VPN & PRIVACY SERVICES ============
-    // VPN service websites being reachable lets students learn about VPNs
-    // and download them on personal devices. Actually connecting to a VPN
-    // from a managed Chromebook is usually blocked separately.
-
-    {
-        id: 'vpn-nordvpn',
-        name: 'NordVPN',
-        detail: 'Major commercial VPN - typically blocked in K-12',
-        section: 'vpn',
-        run: async () => {
-            return await testFetch('https://nordvpn.com/', 'warn');
-        }
-    },
-    {
-        id: 'vpn-protonvpn',
-        name: 'ProtonVPN',
-        detail: 'Privacy-focused VPN',
-        section: 'vpn',
-        run: async () => {
-            return await testFetch('https://protonvpn.com/', 'warn');
-        }
-    },
-    {
-        id: 'vpn-expressvpn',
-        name: 'ExpressVPN',
-        detail: 'Major commercial VPN',
-        section: 'vpn',
-        run: async () => {
-            return await testFetch('https://www.expressvpn.com/', 'warn');
-        }
-    },
-    {
-        id: 'vpn-hola',
-        name: 'Hola VPN',
-        detail: 'Browser-extension VPN popular with students',
-        section: 'vpn',
-        run: async () => {
-            return await testFetch('https://hola.org/', 'bad');
-        }
-    },
-    {
-        id: 'vpn-tunnelbear',
-        name: 'TunnelBear',
-        detail: 'Free tier VPN commonly used by students',
-        section: 'vpn',
-        run: async () => {
-            return await testFetch('https://www.tunnelbear.com/', 'warn');
-        }
-    },
-    {
-        id: 'vpn-windscribe',
-        name: 'Windscribe',
-        detail: 'Free tier VPN',
-        section: 'vpn',
-        run: async () => {
-            return await testFetch('https://windscribe.com/', 'warn');
-        }
-    },
-    {
-        id: 'vpn-psiphon',
-        name: 'Psiphon',
-        detail: 'Circumvention tool designed to bypass filtering',
-        section: 'vpn',
-        run: async () => {
-            return await testFetch('https://psiphon.ca/', 'bad');
-        }
-    },
-    {
-        id: 'vpn-lantern',
-        name: 'Lantern',
-        detail: 'Circumvention tool',
-        section: 'vpn',
-        run: async () => {
-            return await testFetch('https://lantern.io/', 'bad');
-        }
-    },
-    {
-        id: 'vpn-outline',
-        name: 'Outline VPN',
-        detail: 'Google-backed VPN project',
-        section: 'vpn',
-        run: async () => {
-            return await testFetch('https://getoutline.org/', 'warn');
-        }
-    },
-
-    // ============ CLOUD GAMING SERVICES ============
-    // These stream games from remote servers - the Chromebook just renders
-    // video. Filters that look for game downloads miss them entirely.
-
-    {
-        id: 'cloud-nowgg',
-        name: 'Now.gg',
-        detail: 'Cloud gaming for mobile games (Roblox, Minecraft) in browser - HUGE with students',
-        section: 'cloud-gaming',
-        run: async () => {
-            return await testFetch('https://now.gg/', 'bad');
-        }
-    },
-    {
-        id: 'cloud-cloudmoon',
-        name: 'CloudMoon',
-        detail: 'Cloud gaming platform popular with K-12 students',
-        section: 'cloud-gaming',
-        run: async () => {
-            return await testFetch('https://www.cloudmoon.ai/', 'bad');
-        }
-    },
-    {
-        id: 'cloud-geforcenow',
-        name: 'GeForce Now',
-        detail: "NVIDIA's cloud gaming service",
-        section: 'cloud-gaming',
-        run: async () => {
-            return await testFetch('https://www.nvidia.com/en-us/geforce-now/', 'warn');
-        }
-    },
-    {
-        id: 'cloud-xbox',
-        name: 'Xbox Cloud Gaming',
-        detail: "Microsoft's cloud gaming service",
-        section: 'cloud-gaming',
-        run: async () => {
-            return await testFetch('https://www.xbox.com/en-US/play', 'warn');
-        }
-    },
-    {
-        id: 'cloud-roblox',
-        name: 'Roblox',
-        detail: 'Roblox home page - typically blocked but worth confirming',
-        section: 'cloud-gaming',
-        run: async () => {
-            return await testFetch('https://www.roblox.com/', 'bad');
-        }
-    },
-    {
-        id: 'cloud-minecraft',
-        name: 'Minecraft',
-        detail: 'Minecraft.net home page',
-        section: 'cloud-gaming',
-        run: async () => {
-            return await testFetch('https://www.minecraft.net/', 'info');
-        }
-    },
-    {
-        id: 'cloud-poki',
-        name: 'Poki',
-        detail: 'Browser game aggregator, huge with students',
-        section: 'cloud-gaming',
-        run: async () => {
-            return await testFetch('https://poki.com/', 'bad');
-        }
-    },
-    {
-        id: 'cloud-crazygames',
-        name: 'CrazyGames',
-        detail: 'Browser game aggregator',
-        section: 'cloud-gaming',
-        run: async () => {
-            return await testFetch('https://www.crazygames.com/', 'bad');
+            return await testFetchCipa('https://www.guns.com/');
         }
     },
 
     // ============ INTERNAL INFRASTRUCTURE ============
-    // These test reachability to common internal infrastructure hostnames.
-    // They're best-effort - some will fail due to DNS not resolving, others due
-    // to the site not speaking HTTPS. The result is informative either way.
 
     {
         id: 'internal-icsd',
-        name: 'icsd.k12.ny.us',
-        detail: 'District main domain - expected to resolve',
+        name: 'ICSD public website',
+        detail: 'District main site - should load',
         section: 'internal',
         run: async () => {
             return await testFetch('https://www.icsd.k12.ny.us/', 'info');
         }
     },
     {
-        id: 'internal-mail-google',
-        name: 'Google Workspace mail',
-        detail: 'mail.google.com should be reachable for students',
-        section: 'internal',
-        run: async () => {
-            return await testFetch('https://mail.google.com/', 'info');
-        }
-    },
-    {
         id: 'internal-classroom',
         name: 'Google Classroom',
-        detail: 'classroom.google.com should be reachable for students',
+        detail: 'Core student educational tool - must load',
         section: 'internal',
         run: async () => {
             return await testFetch('https://classroom.google.com/', 'info');
@@ -1815,11 +940,142 @@ const TESTS = [
     {
         id: 'internal-drive',
         name: 'Google Drive',
-        detail: 'drive.google.com should be reachable for students',
+        detail: 'Core student storage - must load',
         section: 'internal',
         run: async () => {
             return await testFetch('https://drive.google.com/', 'info');
         }
+    },
+    {
+        id: 'internal-mail',
+        name: 'Gmail (Workspace)',
+        detail: 'Student email - must load',
+        section: 'internal',
+        run: async () => {
+            return await testFetch('https://mail.google.com/', 'info');
+        }
+    },
+
+    // ============ MANUAL VERIFICATION ============
+
+    {
+        id: 'manual-developer-mode',
+        name: 'Developer mode blocked',
+        detail: 'Power off, then hold Esc+Refresh and press Power. Press Ctrl+D. Should show "managed device" message, not offer to enter dev mode.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'physical check required' }; }
+    },
+    {
+        id: 'manual-powerwash',
+        name: 'Powerwash forces re-enrollment',
+        detail: 'Ctrl+Alt+Shift+R from login screen. After wipe, device should re-enroll to district policies automatically.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'test with spare device' }; }
+    },
+    {
+        id: 'manual-guest-mode',
+        name: 'Guest mode disabled',
+        detail: 'At login screen, look for "Browse as Guest". Should NOT be present on student devices.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'check login screen' }; }
+    },
+    {
+        id: 'manual-personal-login',
+        name: 'Personal Google account blocked',
+        detail: 'Try entering a personal @gmail.com at login. Should be rejected with "restricted to your organization" message.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'test at login screen' }; }
+    },
+    {
+        id: 'manual-chrome-policy',
+        name: 'chrome://policy inspection',
+        detail: 'Navigate to chrome://policy. Shows all applied enterprise policies. Screenshot this for documentation. Look for: DeveloperToolsAvailability, IncognitoModeAvailability, ExtensionInstallSources, DnsOverHttpsMode, WebUsbAllowDevicesForUrls.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'navigate to chrome://policy' }; }
+    },
+    {
+        id: 'manual-chrome-management',
+        name: 'chrome://management inspection',
+        detail: 'Navigate to chrome://management. Shows managing entity and listed monitoring capabilities. Screenshot this.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'navigate to chrome://management' }; }
+    },
+    {
+        id: 'manual-chrome-extensions',
+        name: 'chrome://extensions inspection',
+        detail: 'Navigate to chrome://extensions. List which extensions are force-installed. Look for Linewize Connect specifically. Screenshot.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'navigate to chrome://extensions' }; }
+    },
+    {
+        id: 'manual-install-extension',
+        name: 'Extension installation blocked',
+        detail: 'Try to install any extension from the Chrome Web Store. Should be blocked unless on allowlist.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'try Chrome Web Store' }; }
+    },
+    {
+        id: 'manual-devtools',
+        name: 'DevTools availability',
+        detail: 'Press F12 or Ctrl+Shift+I. If DevTools opens, student can inspect/modify pages and potentially interfere with filter extension.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'press F12' }; }
+    },
+    {
+        id: 'manual-crosh',
+        name: 'Crosh terminal access',
+        detail: 'Press Ctrl+Alt+T. Type "help" then "shell". If shell opens, student has limited shell access.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'Ctrl+Alt+T then "shell"' }; }
+    },
+    {
+        id: 'manual-linux-mode',
+        name: 'Linux (Crostini) disabled',
+        detail: 'Settings > About ChromeOS > Developers > Linux development environment. Should be unavailable for students.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'check Settings' }; }
+    },
+    {
+        id: 'manual-secure-dns',
+        name: 'Chrome Secure DNS setting locked',
+        detail: 'Settings > Privacy and security > Use secure DNS. If the toggle can be changed from default to custom, student can switch to Cloudflare/Google DoH and bypass Linewize DNS visibility. Should be locked by DnsOverHttpsMode policy.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'check Settings > Privacy' }; }
+    },
+    {
+        id: 'manual-proxy-settings',
+        name: 'Network proxy settings locked',
+        detail: 'Settings > Network > [WiFi] > Proxy. If student can set manual proxy, they can route traffic anywhere.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'check network settings' }; }
+    },
+    {
+        id: 'manual-incognito',
+        name: 'Incognito mode + extensions',
+        detail: 'Press Ctrl+Shift+N. If incognito opens, test whether Linewize Connect still works in that mode. Extensions often do not run in incognito by default unless explicitly enabled.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'test with Ctrl+Shift+N' }; }
+    },
+    {
+        id: 'manual-usb-storage',
+        name: 'USB storage policy',
+        detail: 'Plug in a USB drive. Does it mount? Read/write? Policy varies by district.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'physical USB test' }; }
+    },
+    {
+        id: 'manual-android-apps',
+        name: 'Play Store / Android apps',
+        detail: 'Check whether Google Play Store is available. Ability to install arbitrary Android apps is a significant capability increase.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'check launcher' }; }
+    },
+    {
+        id: 'manual-print-to-pdf',
+        name: 'Print to PDF bypass',
+        detail: 'Ctrl+P and choose "Save as PDF". If any blocked page can be rendered to PDF, content can leave the filter. Documented Linewize bypass vector.',
+        section: 'manual',
+        run: async () => { return { status: 'manual', result: 'test with Ctrl+P' }; }
     },
 ];
 
@@ -1827,12 +1083,11 @@ const TESTS = [
 // TEST HARNESS
 // ============================================================================
 
-// Fetch a URL with a timeout and classify the result
-async function testFetch(url, expectedStatus = 'info', headers = {}) {
+async function testFetch(url, expectedStatus, headers) {
+    if (!headers) headers = {};
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 4000);
     const start = Date.now();
-
     try {
         await fetch(url, {
             method: 'GET',
@@ -1844,19 +1099,32 @@ async function testFetch(url, expectedStatus = 'info', headers = {}) {
         });
         clearTimeout(timeout);
         const ms = Date.now() - start;
-        // With no-cors, we get an opaque response for anything reachable.
-        // We can't read the status, but we know the request completed.
-        return {
-            status: expectedStatus,
-            result: 'reachable (' + ms + 'ms)'
-        };
+        return { status: expectedStatus || 'info', result: 'reachable (' + ms + 'ms)' };
     } catch (e) {
         clearTimeout(timeout);
-        // Connection failed - could be DNS blocked, filter block, or real network failure
-        if (e.name === 'AbortError') {
-            return { status: 'good', result: 'timeout/blocked' };
-        }
-        return { status: 'good', result: 'blocked' };
+        return { status: 'good', result: e.name === 'AbortError' ? 'timeout/blocked' : 'blocked' };
+    }
+}
+
+// For CIPA category tests: "reachable" is bad (filter missed it), "blocked" is good (filter working)
+async function testFetchCipa(url) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const start = Date.now();
+    try {
+        await fetch(url, {
+            method: 'GET',
+            mode: 'no-cors',
+            cache: 'no-store',
+            signal: controller.signal,
+            credentials: 'omit'
+        });
+        clearTimeout(timeout);
+        const ms = Date.now() - start;
+        return { status: 'bad', result: 'reachable (' + ms + 'ms) - filter gap?' };
+    } catch (e) {
+        clearTimeout(timeout);
+        return { status: 'good', result: 'blocked (filter working)' };
     }
 }
 
@@ -1864,34 +1132,46 @@ async function testFetch(url, expectedStatus = 'info', headers = {}) {
 // UI
 // ============================================================================
 
-const state = {
-    results: {}, // id -> { status, result }
-    running: false
+const state = { results: {}, running: false };
+
+const SECTIONS = [
+    'device', 'management', 'policies', 'capabilities',
+    'webrtc', 'bypass', 'monitoring', 'cipa', 'internal', 'manual'
+];
+
+const SECTION_NAMES = {
+    'device': 'DEVICE & BROWSER FINGERPRINT',
+    'management': 'ENTERPRISE MANAGEMENT INDICATORS',
+    'policies': 'CHROME POLICY ENFORCEMENT (INFERRED)',
+    'capabilities': 'BROWSER CAPABILITIES & HARDWARE APIS',
+    'webrtc': 'WEBRTC & NETWORK LEAKAGE',
+    'bypass': 'FILTER BYPASS METHODS',
+    'monitoring': 'MONITORING & CLASSROOM TOOLS',
+    'cipa': 'CIPA SANITY CHECK',
+    'internal': 'INTERNAL INFRASTRUCTURE REACHABILITY',
+    'manual': 'MANUAL VERIFICATION CHECKLIST'
 };
 
 function renderTestRows() {
-    const sections = ['device', 'policies', 'capabilities', 'filter', 'bypass', 'proxies', 'games', 'social', 'streaming', 'cipa', 'ai', 'vpn', 'cloud-gaming', 'internal'];
-    for (const section of sections) {
+    for (const section of SECTIONS) {
         const listEl = document.getElementById('list-' + section);
+        if (!listEl) continue;
         listEl.innerHTML = '';
         const tests = TESTS.filter(t => t.section === section);
         for (const test of tests) {
             const row = document.createElement('div');
             row.className = 'test-row';
             row.id = 'row-' + test.id;
-
             const result = state.results[test.id];
             const status = result ? result.status : 'pending';
             const resultText = result ? result.result : '';
-
-            row.innerHTML = `
-                <span class="status status-${status}">${status}</span>
-                <div class="body">
-                    <div class="name">${escapeHtml(test.name)}</div>
-                    <div class="detail">${escapeHtml(test.detail)}</div>
-                </div>
-                <div class="result ${status === 'bad' || status === 'warn' || status === 'good' ? status : ''}">${escapeHtml(resultText)}</div>
-            `;
+            row.innerHTML =
+                '<span class="status status-' + status + '">' + status + '</span>' +
+                '<div class="body">' +
+                    '<div class="name">' + escapeHtml(test.name) + '</div>' +
+                    '<div class="detail">' + escapeHtml(test.detail) + '</div>' +
+                '</div>' +
+                '<div class="result ' + (['bad','warn','good'].indexOf(status) >= 0 ? status : '') + '">' + escapeHtml(resultText) + '</div>';
             listEl.appendChild(row);
         }
     }
@@ -1901,13 +1181,9 @@ function renderTestRows() {
 function updateCounts() {
     let good = 0, bad = 0, warn = 0, info = 0, pending = 0;
     const sections = {};
-
     for (const test of TESTS) {
-        if (!sections[test.section]) {
-            sections[test.section] = { total: 0, done: 0 };
-        }
+        if (!sections[test.section]) sections[test.section] = { total: 0, done: 0 };
         sections[test.section].total++;
-
         const r = state.results[test.id];
         if (!r) {
             pending++;
@@ -1919,16 +1195,14 @@ function updateCounts() {
             else if (r.status === 'info') info++;
         }
     }
-
     document.getElementById('count-good').textContent = good;
     document.getElementById('count-bad').textContent = bad;
     document.getElementById('count-warn').textContent = warn;
     document.getElementById('count-info').textContent = info;
     document.getElementById('count-pending').textContent = pending;
-
-    for (const [sec, c] of Object.entries(sections)) {
+    for (const sec in sections) {
         const el = document.getElementById('counts-' + sec);
-        if (el) el.textContent = c.done + ' / ' + c.total;
+        if (el) el.textContent = sections[sec].done + ' / ' + sections[sec].total;
     }
 }
 
@@ -1939,7 +1213,7 @@ function updateTestRow(test, result) {
     const resultEl = row.querySelector('.result');
     statusEl.className = 'status status-' + result.status;
     statusEl.textContent = result.status;
-    resultEl.className = 'result ' + (result.status === 'bad' || result.status === 'warn' || result.status === 'good' ? result.status : '');
+    resultEl.className = 'result ' + (['bad','warn','good'].indexOf(result.status) >= 0 ? result.status : '');
     resultEl.textContent = result.result;
 }
 
@@ -1957,11 +1231,10 @@ async function runAllTests() {
     document.getElementById('run-all').disabled = true;
     state.results = {};
     renderTestRows();
-
-    // Run tests in small batches so we don't flood the network
     const batchSize = 4;
-    for (let i = 0; i < TESTS.length; i += batchSize) {
-        const batch = TESTS.slice(i, i + batchSize);
+    const testsToRun = TESTS.filter(t => t.section !== 'manual');
+    for (let i = 0; i < testsToRun.length; i += batchSize) {
+        const batch = testsToRun.slice(i, i + batchSize);
         await Promise.all(batch.map(async (test) => {
             setTestRunning(test);
             try {
@@ -1976,7 +1249,12 @@ async function runAllTests() {
             updateCounts();
         }));
     }
-
+    // Manual tests show placeholder state
+    for (const test of TESTS.filter(t => t.section === 'manual')) {
+        state.results[test.id] = await test.run();
+        updateTestRow(test, state.results[test.id]);
+    }
+    updateCounts();
     state.running = false;
     document.getElementById('run-all').disabled = false;
 }
@@ -2013,26 +1291,9 @@ function exportReport() {
     lines.push('  Info:        ' + info);
     lines.push('');
 
-    const sectionNames = {
-        'device': 'DEVICE & BROWSER FINGERPRINT',
-        'policies': 'BROWSER POLICY ENFORCEMENT',
-        'capabilities': 'BROWSER CAPABILITIES & API ACCESS',
-        'filter': 'CONTENT FILTER REACHABILITY',
-        'bypass': 'FILTER BYPASS METHODS',
-        'proxies': 'WEB PROXY / UNBLOCKER SITES',
-        'games': 'UNBLOCKED GAMES SITES',
-        'social': 'SOCIAL MEDIA & MESSAGING',
-        'streaming': 'STREAMING & ENTERTAINMENT',
-        'cipa': 'CIPA COMPLIANCE CATEGORIES',
-        'ai': 'AI TOOLS',
-        'vpn': 'VPN & PRIVACY SERVICES',
-        'cloud-gaming': 'CLOUD GAMING SERVICES',
-        'internal': 'INTERNAL INFRASTRUCTURE REACHABILITY'
-    };
-
-    for (const [sec, name] of Object.entries(sectionNames)) {
+    for (const sec of SECTIONS) {
         lines.push('='.repeat(70));
-        lines.push(name);
+        lines.push(SECTION_NAMES[sec]);
         lines.push('='.repeat(70));
         const tests = TESTS.filter(t => t.section === sec);
         for (const test of tests) {
@@ -2049,21 +1310,17 @@ function exportReport() {
     lines.push('='.repeat(70));
     lines.push('NOTES');
     lines.push('='.repeat(70));
-    lines.push('- Status "good" means the test outcome suggests protection is working');
-    lines.push('  (e.g., a bypass site is blocked, a risky API is unavailable).');
-    lines.push('- Status "bad" or "warn" suggests a potential gap or risk.');
-    lines.push('- Status "info" is informational - neither good nor bad on its own.');
-    lines.push('- Filter reachability tests use mode: no-cors, which means we can only');
-    lines.push('  detect whether the request completed, not what the response was.');
-    lines.push('  A "reachable" result means the browser got a response from the URL.');
-    lines.push('- Some tests (like DevTools availability) cannot be fully automated');
-    lines.push('  and require manual verification alongside this report.');
+    lines.push('- This tool focuses on gaps that CONTENT FILTERING cannot close.');
+    lines.push('- Linewize handles URL/category-based blocking well. These tests check');
+    lines.push('  things Linewize cannot see: hardware APIs, policy enforcement, WebRTC.');
+    lines.push('- Reachability tests use mode: no-cors. "Reachable" means the browser got');
+    lines.push('  a response but cannot read the content. The response may be a Linewize');
+    lines.push('  block page - manually visit "reachable" URLs to see actual behavior.');
+    lines.push('- Status "manual" requires physical interaction with the device.');
 
     document.getElementById('export-output').value = lines.join('\n');
     document.getElementById('export-output').select();
-    try {
-        document.execCommand('copy');
-    } catch (e) {}
+    try { document.execCommand('copy'); } catch (e) {}
 }
 
 function escapeHtml(text) {
@@ -2072,10 +1329,6 @@ function escapeHtml(text) {
     div.textContent = String(text);
     return div.innerHTML;
 }
-
-// ============================================================================
-// INIT
-// ============================================================================
 
 document.getElementById('run-all').addEventListener('click', runAllTests);
 document.getElementById('reset').addEventListener('click', resetTests);
