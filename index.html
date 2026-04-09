@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>K-12 Chromebook Security Diagnostic</title>
+<title>K-12 Chromebook Security Diagnostic v3</title>
 <style>
     :root {
         --bg: #0d1117;
@@ -91,8 +91,9 @@
     .controls {
         display: flex;
         gap: 12px;
-        margin-bottom: 28px;
+        margin-bottom: 20px;
         flex-wrap: wrap;
+        align-items: center;
     }
 
     button {
@@ -115,6 +116,57 @@
         border: 1px solid var(--border);
     }
     button.secondary:hover { background: var(--border); }
+
+    .context-picker {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 6px 12px;
+        margin-left: auto;
+    }
+    .context-picker label {
+        font-size: 12px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .context-picker select {
+        background: var(--bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 5px 8px;
+        font-size: 13px;
+        font-family: inherit;
+    }
+
+    .baseline-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 28px;
+        padding: 10px 14px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 12px;
+        color: var(--text-dim);
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .baseline-bar strong { color: var(--text); }
+    .baseline-bar .baseline-status {
+        font-family: var(--mono);
+        padding: 2px 8px;
+        background: var(--surface-alt);
+        border-radius: 4px;
+    }
+    .baseline-bar button {
+        padding: 5px 12px;
+        font-size: 12px;
+    }
 
     .summary {
         display: grid;
@@ -240,6 +292,9 @@
     }
     .test-row:hover { background: var(--surface-alt); }
     .test-row:last-child { border-bottom: none; }
+    .test-row.drift {
+        box-shadow: inset 3px 0 0 var(--warn);
+    }
 
     .test-row .status {
         font-size: 11px;
@@ -271,6 +326,19 @@
         font-weight: 600;
         font-size: 14px;
         margin-bottom: 3px;
+    }
+    .test-row .name .drift-badge {
+        display: inline-block;
+        background: var(--warn);
+        color: #000;
+        font-size: 9px;
+        font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 3px;
+        margin-left: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        vertical-align: middle;
     }
     .test-row .detail {
         color: var(--text-dim);
@@ -342,6 +410,33 @@
         margin-right: 6px;
     }
 
+    .test-row .drawer .policy-link {
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 12px;
+    }
+    .test-row .drawer .policy-link:hover { text-decoration: underline; }
+
+    .test-row .drawer .context-note {
+        background: #0d2438;
+        border-left: 3px solid var(--accent);
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--text);
+    }
+
+    .test-row .drawer .drift-note {
+        background: #2a1f00;
+        border-left: 3px solid var(--warn);
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--text);
+    }
+
     .export-area {
         margin-top: 28px;
         padding: 20px;
@@ -398,14 +493,14 @@
         <header>
             <h1>K-12 Chromebook Security Diagnostic</h1>
             <div class="subtitle">Policy enforcement and browser capability audit for managed student devices</div>
-            <div class="version-line">Version 2.0 &middot; Linewize-safe &middot; Runs entirely in-browser &middot; No data leaves this page</div>
+            <div class="version-line">Version 3.0 &middot; Linewize-aware &middot; Runs entirely in-browser &middot; No data leaves this page</div>
         </header>
 
         <div class="notice good">
             <strong>What this tool is:</strong> A read-only diagnostic that reports on Chrome enterprise policy
             enforcement state and browser capability exposure. It checks whether hardening controls are in place
             by observing browser behavior. Every finding comes with the specific policy name that controls it and
-            guidance on how to fix it.
+            guidance on how to fix it. Select your context (student OU vs staff OU) to adjust expected values.
         </div>
 
         <div class="notice">
@@ -428,6 +523,24 @@
             <button id="export" class="secondary">Copy Report</button>
             <button id="export-json" class="secondary">Copy JSON</button>
             <button id="expand-all" class="secondary">Expand All Details</button>
+            <div class="context-picker">
+                <label for="context-select">Context</label>
+                <select id="context-select">
+                    <option value="student-elem">Student (Elementary)</option>
+                    <option value="student-sec" selected>Student (Secondary)</option>
+                    <option value="staff">Staff</option>
+                    <option value="admin">Admin / IT</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="baseline-bar">
+            <strong>Baseline:</strong>
+            <span class="baseline-status" id="baseline-status">none saved</span>
+            <button id="save-baseline" class="secondary">Save Current as Baseline</button>
+            <button id="import-baseline" class="secondary">Import Baseline JSON</button>
+            <button id="clear-baseline" class="secondary">Clear Baseline</button>
+            <span class="hint" style="margin-left:auto;">Baseline comparison flags drift against a known-good snapshot.</span>
         </div>
 
         <div class="score-box">
@@ -437,8 +550,8 @@
             </div>
             <div class="score-info">
                 <h3 id="score-title">Run tests to see posture score</h3>
-                <p id="score-summary">The overall score weights checks by severity: critical findings impact the score more than informational ones. Scoring is a rough guideline, not an exact measurement. Use it to compare between runs, not between districts.</p>
-                <p class="hint">Click any test row to expand its detail drawer with policy names and fix guidance.</p>
+                <p id="score-summary">The overall score weights checks by severity, adjusted for the selected context. Critical findings impact the score more than informational ones. Scoring is a rough guideline, not an exact measurement. Use it to compare between runs, not between districts.</p>
+                <p class="hint">Click any test row to expand its detail drawer with policy names, doc links, and fix guidance.</p>
             </div>
         </div>
 
@@ -466,6 +579,18 @@
             <div class="section-header"><h2>Chrome Policy Enforcement</h2><div class="counts" id="counts-policies"></div></div>
             <div class="section-desc">Infers whether critical Chrome policies are enforced by testing observable behavior. We can't read policies directly, but we can test what they control.</div>
             <div class="test-list" id="list-policies"></div>
+        </section>
+
+        <section id="section-modern-web">
+            <div class="section-header"><h2>Modern Web Platform (Chrome 140s+)</h2><div class="counts" id="counts-modern-web"></div></div>
+            <div class="section-desc">Newer web platform features from recent Chrome releases. These are where the current hardening gaps usually are - policies are new and defaults may not be what you want for a student OU.</div>
+            <div class="test-list" id="list-modern-web"></div>
+        </section>
+
+        <section id="section-genai">
+            <div class="section-header"><h2>Generative AI Features</h2><div class="counts" id="counts-genai"></div></div>
+            <div class="section-desc">Built-in Chrome AI features introduced in 2025-2026. New policy surface area with significant FERPA implications for student OUs.</div>
+            <div class="test-list" id="list-genai"></div>
         </section>
 
         <section id="section-hardware">
@@ -512,7 +637,7 @@
 
         <section id="section-manual">
             <div class="section-header"><h2>Manual Verification Checklist</h2><div class="counts" id="counts-manual"></div></div>
-            <div class="section-desc">These checks cannot be automated from JavaScript and require physical interaction with the device. The most valuable findings often come from this section.</div>
+            <div class="section-desc">These checks cannot be automated from JavaScript and require physical interaction with the device or the Admin console. The most valuable findings often come from this section.</div>
             <div class="test-list" id="list-manual"></div>
         </section>
 
@@ -522,7 +647,7 @@
         </div>
 
         <footer>
-            K-12 Chromebook Security Diagnostic &middot; Version 2.0 &middot; MIT License<br>
+            K-12 Chromebook Security Diagnostic &middot; Version 3.0 &middot; MIT License<br>
             Built for school IT administrators to audit their own Chromebook deployments<br>
             <span class="hint">This tool does not transmit data. All checks run locally in your browser.</span>
         </footer>
@@ -532,10 +657,84 @@
 'use strict';
 
 // ============================================================================
-// STATE PERSISTENCE via localStorage
+// CONFIGURATION CONSTANTS
 // ============================================================================
 
-const STORAGE_KEY = 'k12-chromebook-audit-v2';
+// IMPORTANT: Update this quarterly. Used to flag devices running stale Chrome.
+// Check current stable at https://chromereleases.googleblog.com/
+// Last updated: April 2026
+const CURRENT_CHROME_STABLE_MAJOR = 145;
+const CURRENT_CHROME_STABLE_DATE = '2026-04';
+
+const STORAGE_KEY = 'k12-chromebook-audit-v3';
+const BASELINE_KEY = 'k12-chromebook-audit-v3-baseline';
+const CONTEXT_KEY = 'k12-chromebook-audit-v3-context';
+
+// ============================================================================
+// CONTEXT SYSTEM
+//
+// Tests can have per-context overrides. The `contexts` field on a test lets
+// you specify different severity, different expected status, or different
+// fix guidance depending on whether this is a student device, staff device,
+// or admin workstation.
+//
+// Context IDs:
+//   student-elem  - Elementary student device (tightest restrictions)
+//   student-sec   - Secondary (middle/high) student device
+//   staff         - Teacher / staff device (more permissive for curriculum tools)
+//   admin         - IT admin workstation (fewest restrictions)
+// ============================================================================
+
+const CONTEXTS = ['student-elem', 'student-sec', 'staff', 'admin'];
+const CONTEXT_LABELS = {
+    'student-elem': 'Student (Elementary)',
+    'student-sec': 'Student (Secondary)',
+    'staff': 'Staff',
+    'admin': 'Admin / IT'
+};
+
+function getContext() {
+    try {
+        return localStorage.getItem(CONTEXT_KEY) || 'student-sec';
+    } catch (e) { return 'student-sec'; }
+}
+
+function setContext(ctx) {
+    try { localStorage.setItem(CONTEXT_KEY, ctx); } catch (e) {}
+}
+
+// Resolves a test's severity for the current context, falling back to base.
+function resolveSeverity(test) {
+    const ctx = getContext();
+    if (test.contexts && test.contexts[ctx] && test.contexts[ctx].severity !== undefined) {
+        return test.contexts[ctx].severity;
+    }
+    return test.severity;
+}
+
+// Resolves an optional context-specific note to display in the drawer.
+function resolveContextNote(test) {
+    const ctx = getContext();
+    if (test.contexts && test.contexts[ctx] && test.contexts[ctx].note) {
+        return test.contexts[ctx].note;
+    }
+    return null;
+}
+
+// Some tests have different "expected" results by context (e.g., Crostini
+// should be blocked for students but allowed for staff). This lets a test
+// result get re-scored based on context expectations.
+function resolveExpectedStatus(test) {
+    const ctx = getContext();
+    if (test.contexts && test.contexts[ctx] && test.contexts[ctx].expected) {
+        return test.contexts[ctx].expected;
+    }
+    return null;
+}
+
+// ============================================================================
+// STATE PERSISTENCE via localStorage
+// ============================================================================
 
 function saveState() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.results)); } catch (e) {}
@@ -551,6 +750,36 @@ function clearState() {
     try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
 }
 
+function saveBaseline() {
+    try {
+        const baseline = {
+            savedAt: new Date().toISOString(),
+            context: getContext(),
+            chromeVersion: detectChromeMajor(),
+            results: JSON.parse(JSON.stringify(state.results))
+        };
+        localStorage.setItem(BASELINE_KEY, JSON.stringify(baseline));
+        return baseline;
+    } catch (e) { return null; }
+}
+
+function loadBaseline() {
+    try {
+        const saved = localStorage.getItem(BASELINE_KEY);
+        if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return null;
+}
+
+function clearBaseline() {
+    try { localStorage.removeItem(BASELINE_KEY); } catch (e) {}
+}
+
+function detectChromeMajor() {
+    const m = navigator.userAgent.match(/Chrome\/(\d+)/);
+    return m ? parseInt(m[1], 10) : null;
+}
+
 // ============================================================================
 // TEST DEFINITIONS
 //
@@ -559,20 +788,18 @@ function clearState() {
 //   name     - short display name
 //   detail   - one-line description
 //   section  - which UI section it belongs to
-//   severity - how much this finding matters (0-5)
-//              0 = info only, 5 = critical
-//   policy   - (optional) Chrome enterprise policy name that controls this
+//   severity - base severity (0-5), can be overridden by context
+//   policy   - (optional) Chrome enterprise policy name
+//   policyUrl- (optional) canonical policy documentation URL
 //   fix      - (optional) guidance on how to fix a bad finding
 //   why      - (optional) why it matters, for the drawer
+//   contexts - (optional) per-context overrides: { 'student-sec': {severity, note, expected} }
 //   run      - async function returning { status, result }
-//
-// Status values:
-//   'good'    - the desired state
-//   'bad'     - concerning state
-//   'warn'    - suboptimal but not critical
-//   'info'    - informational, neither good nor bad
-//   'manual'  - requires human verification
 // ============================================================================
+
+function policyUrl(name) {
+    return 'https://chromeenterprise.google/policies/#' + name;
+}
 
 const TESTS = [
 
@@ -601,15 +828,20 @@ const TESTS = [
     },
     {
         id: 'fp-chrome-major',
-        name: 'Chrome major version',
-        detail: 'Major version number (e.g., 134)',
+        name: 'Chrome major version freshness',
+        detail: 'Is the device on a current Chrome stable?',
         section: 'device',
-        severity: 0,
-        why: 'The major version tells you how current the browser is. Check against https://chromereleases.googleblog.com/ for current stable.',
+        severity: 4,
+        why: 'Devices must be on current stable to have recent security patches. This check compares the detected Chrome major version against a constant baked into the tool (CURRENT_CHROME_STABLE_MAJOR). The constant must be updated quarterly as Chrome releases progress. Starting Chrome 153 (September 2026), Chrome moves to a 2-week release cycle, which will make version currency more important and more time-sensitive.',
+        fix: 'If the device is behind, check why: AUE expiration, stuck in an update, blackout window too aggressive, or the device is offline for extended periods. Verify auto-update policy in Google Admin: Devices > Chrome > Settings > Device update settings.',
         run: async () => {
-            const m = navigator.userAgent.match(/Chrome\/(\d+)/);
-            if (!m) return { status: 'warn', result: 'not detected' };
-            return { status: 'info', result: 'Chrome ' + m[1] };
+            const major = detectChromeMajor();
+            if (!major) return { status: 'warn', result: 'not detected' };
+            const lag = CURRENT_CHROME_STABLE_MAJOR - major;
+            if (lag <= 0) return { status: 'good', result: 'Chrome ' + major + ' (current)' };
+            if (lag === 1) return { status: 'good', result: 'Chrome ' + major + ' (one behind)' };
+            if (lag <= 3) return { status: 'warn', result: 'Chrome ' + major + ' (' + lag + ' behind stable ' + CURRENT_CHROME_STABLE_MAJOR + ')' };
+            return { status: 'bad', result: 'Chrome ' + major + ' (' + lag + '+ versions behind)' };
         }
     },
     {
@@ -784,6 +1016,21 @@ const TESTS = [
             result: window.crossOriginIsolated ? 'yes' : 'no (normal for unisolated pages)'
         })
     },
+    {
+        id: 'mgmt-shared-array-buffer',
+        name: 'SharedArrayBuffer availability',
+        detail: 'Proxy for site isolation enforcement',
+        section: 'management',
+        severity: 0,
+        why: 'SharedArrayBuffer requires cross-origin isolation to be enabled. Availability without isolation would indicate weak site isolation policy. On a normal unisolated page, this should be unavailable.',
+        run: async () => {
+            const has = typeof SharedArrayBuffer !== 'undefined';
+            if (has && !window.crossOriginIsolated) {
+                return { status: 'warn', result: 'available without isolation (unusual)' };
+            }
+            return { status: 'info', result: has ? 'available (page is isolated)' : 'not available (normal)' };
+        }
+    },
 
     // ================================================================
     // CHROME POLICY ENFORCEMENT (INFERRED)
@@ -796,6 +1043,7 @@ const TESTS = [
         section: 'policies',
         severity: 2,
         policy: 'DefaultNotificationsSetting',
+        policyUrl: policyUrl('DefaultNotificationsSetting'),
         fix: 'Set DefaultNotificationsSetting to 2 (Block) or 3 (Ask) in Google Admin: Devices > Chrome > Settings > Users & browsers > Content > Notifications',
         why: 'Spam notifications are a common social engineering vector. Students get constantly prompted for notifications from ads, scam sites, and malicious extensions. Block by default.',
         run: async () => {
@@ -813,8 +1061,13 @@ const TESTS = [
         section: 'policies',
         severity: 3,
         policy: 'DefaultGeolocationSetting',
+        policyUrl: policyUrl('DefaultGeolocationSetting'),
         fix: 'Set DefaultGeolocationSetting to 2 (Block) for student OUs. Google Admin > Devices > Chrome > Settings > Users & browsers > Content > Geolocation.',
         why: 'Students should not be broadcasting their physical location to arbitrary sites. This is a privacy concern for minors and a potential safety issue.',
+        contexts: {
+            'staff': { severity: 1, note: 'Staff may legitimately need geolocation for curriculum tools (Google Earth, mapping lessons). Consider "Ask" rather than hard block.' },
+            'admin': { severity: 0 }
+        },
         run: async () => {
             if (!navigator.permissions) return { status: 'info', result: 'permissions API unavailable' };
             try {
@@ -833,9 +1086,14 @@ const TESTS = [
         detail: 'Default permission for camera access',
         section: 'policies',
         severity: 2,
-        policy: 'DefaultVideoCaptureSetting / VideoCaptureAllowed',
+        policy: 'VideoCaptureAllowed',
+        policyUrl: policyUrl('VideoCaptureAllowed'),
         fix: 'For student OUs, consider setting VideoCaptureAllowed to False or locking DefaultVideoCaptureSetting to Ask. Some classroom tools need camera access so blanket blocking may not be appropriate.',
         why: 'Camera access enables video calls but also enables surveillance and inappropriate content creation. Balance educational need with safety.',
+        contexts: {
+            'student-elem': { severity: 3, note: 'Elementary students rarely need camera access. Default to blocked with allowlist for specific approved tools.' },
+            'staff': { severity: 0, note: 'Staff need camera access for Meet, documentation, etc.' }
+        },
         run: async () => {
             if (!navigator.permissions) return { status: 'info', result: 'permissions API unavailable' };
             try {
@@ -854,9 +1112,14 @@ const TESTS = [
         detail: 'Default permission for microphone access',
         section: 'policies',
         severity: 2,
-        policy: 'DefaultAudioCaptureSetting / AudioCaptureAllowed',
+        policy: 'AudioCaptureAllowed',
+        policyUrl: policyUrl('AudioCaptureAllowed'),
         fix: 'Similar to camera - balance educational need. Consider blocking for younger grade OUs.',
         why: 'Microphone access enables voice communication but also enables covert audio recording.',
+        contexts: {
+            'student-elem': { severity: 3 },
+            'staff': { severity: 0 }
+        },
         run: async () => {
             if (!navigator.permissions) return { status: 'info', result: 'permissions API unavailable' };
             try {
@@ -876,8 +1139,9 @@ const TESTS = [
         section: 'policies',
         severity: 3,
         policy: 'DefaultClipboardSetting',
-        fix: 'Set DefaultClipboardSetting to 2 (Block) or 3 (Ask) in Google Admin.',
-        why: 'Reading the clipboard lets a page see whatever a user last copied - passwords, credit card numbers, personal information. Should require explicit permission.',
+        policyUrl: policyUrl('DefaultClipboardSetting'),
+        fix: 'Set DefaultClipboardSetting to 2 (Block) or 3 (Ask) in Google Admin. Consider also configuring ClipboardAllowedForUrls for specific sites that legitimately need clipboard access.',
+        why: 'Reading the clipboard lets a page see whatever a user last copied - passwords, credit card numbers, personal information. Should require explicit permission. Clipboard is also a common exfiltration vector.',
         run: async () => {
             if (!navigator.clipboard || !navigator.clipboard.readText) return { status: 'good', result: 'API unavailable' };
             if (navigator.permissions) {
@@ -900,6 +1164,7 @@ const TESTS = [
         section: 'policies',
         severity: 2,
         policy: 'DefaultPopupsSetting',
+        policyUrl: policyUrl('DefaultPopupsSetting'),
         fix: 'Set DefaultPopupsSetting to 2 (Block) in Google Admin.',
         why: 'Popups are abused for ads and phishing. Should be blocked by default.',
         run: async () => {
@@ -922,10 +1187,10 @@ const TESTS = [
         section: 'policies',
         severity: 3,
         policy: 'SafeBrowsingProtectionLevel',
+        policyUrl: policyUrl('SafeBrowsingProtectionLevel'),
         fix: 'Set SafeBrowsingProtectionLevel to 2 (Enhanced) for student OUs.',
-        why: 'Safe Browsing blocks known phishing and malware sites before a user visits them. Enhanced protection provides real-time URL checking.',
+        why: 'Safe Browsing blocks known phishing and malware sites before a user visits them. Enhanced protection provides real-time URL checking. Even with Linewize as your primary filter, Safe Browsing is a valuable defense-in-depth layer that catches things network-layer filters miss (especially off-network).',
         run: async () => {
-            // We cannot directly query Safe Browsing status. Report that manual check is needed.
             return { status: 'info', result: 'verify via chrome://settings/security' };
         }
     },
@@ -936,9 +1201,9 @@ const TESTS = [
         section: 'policies',
         severity: 0,
         policy: 'PrintingEnabled',
+        policyUrl: policyUrl('PrintingEnabled'),
         why: 'Print is usually allowed but worth knowing your policy state.',
         run: async () => {
-            // We can check if window.print exists
             return {
                 status: typeof window.print === 'function' ? 'info' : 'warn',
                 result: typeof window.print === 'function' ? 'available' : 'blocked'
@@ -952,6 +1217,7 @@ const TESTS = [
         section: 'policies',
         severity: 0,
         policy: 'Disable3DAPIs',
+        policyUrl: policyUrl('Disable3DAPIs'),
         why: 'WebGL is needed for many educational apps (Google Earth, molecular viewers, etc.). Leave enabled unless you have a specific reason.',
         run: async () => {
             try {
@@ -977,6 +1243,220 @@ const TESTS = [
     },
 
     // ================================================================
+    // MODERN WEB PLATFORM (Chrome 140s+)
+    //
+    // New platform features from recent Chrome releases. These are where
+    // the current hardening gaps usually are because the policies are new.
+    // ================================================================
+
+    {
+        id: 'modern-local-network',
+        name: 'Local Network Access permission',
+        detail: 'Chrome 142+ gates requests to local network / loopback',
+        section: 'modern-web',
+        severity: 4,
+        policy: 'LocalNetworkAccessAllowedForUrls',
+        policyUrl: policyUrl('LocalNetworkAccessAllowedForUrls'),
+        fix: 'Leave the default (prompt/block) in place. Only add specific district-controlled URLs to LocalNetworkAccessAllowedForUrls if you have internal web apps that need to make local requests. Review LocalNetworkAccessBlockedForUrls as a belt-and-suspenders block list.',
+        why: 'Chrome 142 introduced a permission prompt for requests from public websites to local IP addresses or loopback. Before this, any webpage could scan the user\'s local network from JavaScript. This is a meaningful defensive improvement: malicious sites can no longer silently probe the student\'s network topology, identify internal services, or attempt CSRF against local routers and IoT devices. The API is new enough that many districts have not yet configured the related policies.',
+        run: async () => {
+            if (!navigator.permissions) return { status: 'info', result: 'permissions API unavailable' };
+            try {
+                const r = await navigator.permissions.query({ name: 'local-network-access' });
+                if (r.state === 'denied')  return { status: 'good', result: 'blocked by policy' };
+                if (r.state === 'granted') return { status: 'warn', result: 'pre-granted (review)' };
+                return { status: 'good', result: 'default (prompt required)' };
+            } catch (e) {
+                return { status: 'info', result: 'permission name not recognized (pre-Chrome 142?)' };
+            }
+        }
+    },
+    {
+        id: 'modern-https-only',
+        name: 'HTTPS-Only Mode',
+        detail: 'Does Chrome force HTTPS upgrades?',
+        section: 'modern-web',
+        severity: 3,
+        policy: 'HttpsOnlyMode',
+        policyUrl: policyUrl('HttpsOnlyMode'),
+        fix: 'Set HttpsOnlyMode to "force_enabled" for student OUs. Also enable HttpsUpgradesEnabled so Chrome automatically attempts HTTPS for HTTP navigations.',
+        why: 'HTTPS-Only Mode makes Chrome warn before loading any HTTP page, preventing passive eavesdropping and MITM downgrade attacks. Should be enforced for all users. Cannot be directly queried from JavaScript, so this check is informational - verify manually at chrome://settings/security.',
+        run: async () => {
+            return { status: 'info', result: 'verify at chrome://settings/security' };
+        }
+    },
+    {
+        id: 'modern-webgpu',
+        name: 'WebGPU API',
+        detail: 'GPU compute and advanced rendering',
+        section: 'modern-web',
+        severity: 2,
+        why: 'WebGPU enables direct GPU access from web pages, including compute shaders. It\'s a newer attack surface than WebGL and has been the subject of recent hardening (Chrome 148 disabled WebGPU for users enrolled in Android Advanced Protection Mode). The API is also a fingerprinting vector since it exposes detailed GPU capabilities. For student devices, consider whether the educational use case justifies the attack surface. Most school-use-case 3D content works fine with WebGL.',
+        fix: 'No dedicated policy exists to disable WebGPU directly as of Chrome 145. It is gated by Disable3DAPIs (which also disables WebGL). If you want to disable WebGPU specifically, watch for a future dedicated policy.',
+        run: async () => {
+            const has = 'gpu' in navigator;
+            return { status: has ? 'warn' : 'good', result: has ? 'available' : 'not available' };
+        }
+    },
+    {
+        id: 'modern-ech-check',
+        name: 'Encrypted Client Hello detection',
+        detail: 'Is ECH in use for this connection?',
+        section: 'modern-web',
+        severity: 0,
+        why: 'ECH encrypts the TLS SNI field, which historically was the most reliable way for content filters (including Linewize) to identify the destination site on encrypted connections. With ECH enabled, filters that rely on SNI inspection lose visibility. This check is informational only - ECH status is not directly queryable from the browser. See the ECH policy check in the manual section for configuration guidance.',
+        fix: 'See the EncryptedClientHelloEnabled manual check. Since you use Linewize for content filtering, the typical recommendation is to disable ECH via policy so Linewize retains SNI visibility on student devices. Verify Linewize Connect behavior with ECH before making the change.',
+        run: async () => {
+            return { status: 'info', result: 'not directly queryable - see manual check' };
+        }
+    },
+    {
+        id: 'modern-priv-sandbox',
+        name: 'Privacy Sandbox APIs',
+        detail: 'Topics, Protected Audience, Attribution Reporting',
+        section: 'modern-web',
+        severity: 2,
+        policy: 'PrivacySandboxAdTopicsEnabled',
+        policyUrl: policyUrl('PrivacySandboxAdTopicsEnabled'),
+        fix: 'For student OUs, disable all Privacy Sandbox APIs via policy: PrivacySandboxAdTopicsEnabled = false, PrivacySandboxSiteEnabledAdsEnabled = false, PrivacySandboxAdMeasurementEnabled = false. Student devices should not participate in ad personalization regardless of how privacy-preserving the mechanism claims to be. Relevant Chrome release notes from Chrome 144 indicated deprecation and removal of some Privacy Sandbox APIs is planned through Chrome 150.',
+        why: 'Privacy Sandbox replaces third-party cookies with on-device ad personalization. For adult enterprise users this is arguably a privacy improvement. For minors under COPPA/FERPA, participating in any ad personalization system - even one that runs locally - raises compliance questions. Safest posture: disable entirely for student OUs.',
+        contexts: {
+            'staff': { severity: 0, note: 'Less critical for adult staff - left to district preference.' },
+            'admin': { severity: 0 }
+        },
+        run: async () => {
+            const apis = [];
+            if ('browsingTopics' in document) apis.push('Topics');
+            if ('joinAdInterestGroup' in navigator) apis.push('ProtectedAudience');
+            if ('attributionReporting' in window) apis.push('AttributionReporting');
+            if (apis.length === 0) return { status: 'good', result: 'all disabled' };
+            return { status: 'warn', result: 'exposed: ' + apis.join(', ') };
+        }
+    },
+    {
+        id: 'modern-compute-pressure',
+        name: 'Compute Pressure API',
+        detail: 'CPU pressure observation',
+        section: 'modern-web',
+        severity: 1,
+        why: 'Compute Pressure lets a site observe system CPU/thermal state. Legitimate use for adaptive video quality, but also a fingerprinting and side-channel signal.',
+        run: async () => ({
+            status: 'info',
+            result: 'PressureObserver' in window ? 'available' : 'not available'
+        })
+    },
+    {
+        id: 'modern-speculation-rules',
+        name: 'Speculation Rules API',
+        detail: 'Prerendering and prefetching',
+        section: 'modern-web',
+        severity: 0,
+        why: 'Speculation Rules let pages prerender other pages in the background. Network activity a user didn\'t explicitly request may be visible to the content filter as extra traffic. Usually benign.',
+        run: async () => {
+            const has = HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules');
+            return { status: 'info', result: has ? 'supported' : 'not supported' };
+        }
+    },
+
+    // ================================================================
+    // GENERATIVE AI FEATURES
+    //
+    // New policy surface area from Chrome 2025-2026 releases. This is the
+    // area most likely to be misconfigured right now.
+    // ================================================================
+
+    {
+        id: 'genai-ai-object',
+        name: 'window.ai / LanguageModel API',
+        detail: 'Built-in on-device language model',
+        section: 'genai',
+        severity: 4,
+        policy: 'GenAILocalFoundationalModelSettings',
+        policyUrl: policyUrl('GenAILocalFoundationalModelSettings'),
+        fix: 'Set GenAILocalFoundationalModelSettings to disable the underlying model download for student OUs. Without the model, the API becomes unavailable. Also set GenAiDefaultSettings to 2 (Do not allow) as a blanket control.',
+        why: 'Chrome is exposing an on-device language model to web pages through APIs like window.ai, LanguageModel, or window.translation. For student devices this is a significant new attack surface: any website can invoke local AI inference, potentially using student input as context. Content guardrails vary. Safest posture for student OUs: disable the local model entirely via policy.',
+        contexts: {
+            'staff': { severity: 1, note: 'Staff use of browser-native AI is a district policy decision, not a security decision.' },
+            'admin': { severity: 0 }
+        },
+        run: async () => {
+            const surfaces = [];
+            if ('ai' in window) surfaces.push('window.ai');
+            if ('LanguageModel' in window) surfaces.push('LanguageModel');
+            if ('translation' in window) surfaces.push('window.translation');
+            if ('Summarizer' in window) surfaces.push('Summarizer');
+            if ('Writer' in window) surfaces.push('Writer');
+            if ('Rewriter' in window) surfaces.push('Rewriter');
+            if (surfaces.length === 0) return { status: 'good', result: 'no AI surfaces exposed' };
+            return { status: 'bad', result: 'exposed: ' + surfaces.join(', ') };
+        }
+    },
+    {
+        id: 'genai-default-policy',
+        name: 'GenAI default settings',
+        detail: 'GenAiDefaultSettings master policy',
+        section: 'genai',
+        severity: 4,
+        policy: 'GenAiDefaultSettings',
+        policyUrl: policyUrl('GenAiDefaultSettings'),
+        fix: 'Set GenAiDefaultSettings to value 2 (Do not allow features) for student OUs as a blanket control. This covers multiple individual GenAI features including the AI Mode, Gemini integration, and various on-device AI capabilities.',
+        why: 'GenAiDefaultSettings is the master switch for Chrome\'s built-in AI features. Value 0 or 1 enables features; value 2 disables them. This is not directly queryable from JS, but it gates most of the individual AI surface tests in this section. Verify in Google Admin > Devices > Chrome > Settings > Users & browsers > Generative AI.',
+        run: async () => {
+            return { status: 'info', result: 'verify in Google Admin console' };
+        }
+    },
+    {
+        id: 'genai-ai-mode',
+        name: 'AI Mode in address bar',
+        detail: 'AIModeSettings policy',
+        section: 'genai',
+        severity: 3,
+        policy: 'AIModeSettings',
+        policyUrl: policyUrl('AIModeSettings'),
+        fix: 'Set AIModeSettings to 1 (Disabled) for student OUs. Chrome 145 introduced new AI Mode capabilities on Android and iOS; the policy covers desktop and ChromeOS as well.',
+        why: 'AI Mode lets users ask complex questions directly from the address bar and new tab page, routing queries through Google\'s AI services. For student devices this means student queries - potentially containing personal information, classwork, or sensitive content - are being sent to Google AI services. FERPA implications should be considered before enabling.',
+        contexts: {
+            'staff': { severity: 1 },
+            'admin': { severity: 0 }
+        },
+        run: async () => {
+            return { status: 'info', result: 'verify in Google Admin console' };
+        }
+    },
+    {
+        id: 'genai-drive-context',
+        name: 'Google Drive files as AI context',
+        detail: 'Chrome 146+ can surface Drive files to AI features',
+        section: 'genai',
+        severity: 5,
+        policy: 'GenAiDefaultSettings',
+        policyUrl: policyUrl('GenAiDefaultSettings'),
+        fix: 'CRITICAL for student OUs: disable via GenAiDefaultSettings = 2. Starting Chrome 146, Google Drive files become available as AI context on macOS and Windows. This means student Drive content - essays, personal writing, private documents - could be fed into AI features as context.',
+        why: 'This is the single biggest FERPA concern in the current GenAI policy family. Student Drive files containing educational records, personal writing, or sensitive content being used as context for AI features creates direct FERPA exposure. Must be locked down for student OUs before devices reach Chrome 146. Not directly queryable from JS.',
+        contexts: {
+            'staff': { severity: 2, note: 'Staff use requires district decision about AI-augmented document workflows.' },
+            'admin': { severity: 0 }
+        },
+        run: async () => {
+            return { status: 'info', result: 'verify in Google Admin console' };
+        }
+    },
+    {
+        id: 'genai-search-sharing',
+        name: 'Search Content Sharing',
+        detail: 'SearchContentSharingSettings',
+        section: 'genai',
+        severity: 2,
+        policy: 'SearchContentSharingSettings',
+        policyUrl: policyUrl('SearchContentSharingSettings'),
+        fix: 'Configure SearchContentSharingSettings to restrict what page content is shared with search features. Replaces the deprecated LensRegionSearchEnabled policy.',
+        why: 'Controls features like Lens Region Search and related content-sharing with Google search. For student OUs, restrict to prevent page content from being transmitted without explicit user action.',
+        run: async () => {
+            return { status: 'info', result: 'verify in Google Admin console' };
+        }
+    },
+
+    // ================================================================
     // HARDWARE APIS (the high-value section)
     // ================================================================
 
@@ -987,6 +1467,7 @@ const TESTS = [
         section: 'hardware',
         severity: 5,
         policy: 'DefaultWebUsbGuardSetting',
+        policyUrl: policyUrl('DefaultWebUsbGuardSetting'),
         fix: 'Set DefaultWebUsbGuardSetting to 2 (Block) for student OUs. Google Admin > Devices > Chrome > Settings > Users & browsers > Hardware > USB devices > "Do not allow any site to request access to USB devices".',
         why: 'WebUSB lets web pages communicate with USB devices directly. A malicious page could interact with any USB hardware the student has plugged in - drives, microcontrollers, peripherals. This is a direct bypass of any network-level filtering since no network traffic is involved.',
         run: async () => {
@@ -1003,8 +1484,12 @@ const TESTS = [
         section: 'hardware',
         severity: 5,
         policy: 'DefaultSerialGuardSetting',
+        policyUrl: policyUrl('DefaultSerialGuardSetting'),
         fix: 'Set DefaultSerialGuardSetting to 2 (Block) for student OUs. Google Admin > Devices > Chrome > Settings > Users & browsers > Hardware > Serial ports.',
         why: 'Web Serial lets web pages talk to serial hardware - Arduinos, microcontrollers, USB-to-serial adapters. No legitimate educational use case for most students.',
+        contexts: {
+            'staff': { severity: 2, note: 'CTE and robotics staff may have legitimate need for Web Serial with Arduino curriculum. Consider allowlist rather than blanket block.' }
+        },
         run: async () => {
             if ('serial' in navigator && typeof navigator.serial.getPorts === 'function') {
                 return { status: 'bad', result: 'AVAILABLE' };
@@ -1019,6 +1504,7 @@ const TESTS = [
         section: 'hardware',
         severity: 5,
         policy: 'DefaultWebHidGuardSetting',
+        policyUrl: policyUrl('DefaultWebHidGuardSetting'),
         fix: 'Set DefaultWebHidGuardSetting to 2 (Block) for student OUs. Google Admin > Devices > Chrome > Settings > Users & browsers > Hardware > HID devices.',
         why: 'WebHID enables direct communication with HID devices (keyboards, gamepads, specialized input devices). Typically no educational need.',
         run: async () => {
@@ -1035,6 +1521,7 @@ const TESTS = [
         section: 'hardware',
         severity: 4,
         policy: 'DefaultWebBluetoothGuardSetting',
+        policyUrl: policyUrl('DefaultWebBluetoothGuardSetting'),
         fix: 'Set DefaultWebBluetoothGuardSetting to 2 (Block) for student OUs.',
         why: 'Web Bluetooth enables pairing from web pages. Potential for abuse to communicate with nearby Bluetooth devices.',
         run: async () => {
@@ -1075,6 +1562,7 @@ const TESTS = [
         section: 'hardware',
         severity: 2,
         policy: 'ScreenCaptureAllowed',
+        policyUrl: policyUrl('ScreenCaptureAllowed'),
         fix: 'For student OUs, consider setting ScreenCaptureAllowed to False.',
         why: 'Screen capture enables recording of screen contents. Legitimate use for presentations, but also an exfiltration vector.',
         run: async () => {
@@ -1088,7 +1576,8 @@ const TESTS = [
         detail: 'showOpenFilePicker / showSaveFilePicker',
         section: 'hardware',
         severity: 3,
-        policy: 'FileSystemReadAskForUrls / FileSystemWriteAskForUrls',
+        policy: 'FileSystemReadBlockedForUrls',
+        policyUrl: policyUrl('FileSystemReadBlockedForUrls'),
         fix: 'Consider restricting file system access via FileSystemReadBlockedForUrls and FileSystemWriteBlockedForUrls for student OUs.',
         why: 'File System Access gives pages direct read/write access to local files. Modern replacement for legacy file picker but more powerful.',
         run: async () => {
@@ -1306,6 +1795,7 @@ const TESTS = [
         section: 'sensors',
         severity: 3,
         policy: 'DefaultSensorsSetting',
+        policyUrl: policyUrl('DefaultSensorsSetting'),
         why: 'Idle detection can reveal when a student walks away from their device. Privacy concern for minors.',
         run: async () => ({
             status: 'IdleDetector' in window ? 'warn' : 'good',
@@ -1517,7 +2007,6 @@ const TESTS = [
                 ctx.font = '14px Arial';
                 ctx.fillText('test', 2, 2);
                 const data = canvas.toDataURL();
-                // We don't check the actual hash, just whether canvas is usable for fingerprinting
                 return { status: 'warn', result: 'canvas exposed (' + data.length + ' bytes)' };
             } catch (e) {
                 return { status: 'good', result: 'canvas blocked' };
@@ -1550,7 +2039,6 @@ const TESTS = [
         severity: 2,
         why: 'Font enumeration is a strong fingerprinting vector. Modern browsers restrict this.',
         run: async () => {
-            // Check for Local Font Access API (experimental, typically blocked)
             if ('queryLocalFonts' in window) return { status: 'warn', result: 'queryLocalFonts available' };
             return { status: 'good', result: 'queryLocalFonts blocked' };
         }
@@ -1651,6 +2139,7 @@ const TESTS = [
         section: 'webrtc',
         severity: 4,
         policy: 'WebRtcLocalIpsAllowedUrls',
+        policyUrl: policyUrl('WebRtcLocalIpsAllowedUrls'),
         fix: 'Restrict WebRtcLocalIpsAllowedUrls to only trusted sites, or leave empty to block entirely.',
         why: 'WebRTC can expose local network IP addresses to any web page, revealing internal network topology. Modern Chrome obfuscates this with mDNS candidates, but not always.',
         run: async () => {
@@ -1809,7 +2298,7 @@ const TESTS = [
     },
 
     // ================================================================
-    // SAFE REACHABILITY (Google services only)
+    // SAFE REACHABILITY
     // ================================================================
 
     {
@@ -1872,8 +2361,18 @@ const TESTS = [
         section: 'manual',
         severity: 5,
         why: 'chrome://policy shows every enterprise policy applied to the device and is the single most valuable resource for auditing Chrome configuration. Screenshot this page for your records.',
-        fix: 'Look specifically for: DefaultWebUsbGuardSetting, DefaultSerialGuardSetting, DefaultWebHidGuardSetting, DefaultWebBluetoothGuardSetting, DnsOverHttpsMode, DeveloperToolsAvailability, IncognitoModeAvailability, ExtensionInstallSources, ExtensionInstallBlocklist, SafeBrowsingProtectionLevel, DefaultPopupsSetting. Any that are missing are potential hardening gaps.',
+        fix: 'Look specifically for: DefaultWebUsbGuardSetting, DefaultSerialGuardSetting, DefaultWebHidGuardSetting, DefaultWebBluetoothGuardSetting, DnsOverHttpsMode, DeveloperToolsAvailability, IncognitoModeAvailability, ExtensionInstallSources, ExtensionInstallBlocklist, SafeBrowsingProtectionLevel, DefaultPopupsSetting, HttpsOnlyMode, LocalNetworkAccessAllowedForUrls, GenAiDefaultSettings, EncryptedClientHelloEnabled, QuicAllowed. Any that are missing are potential hardening gaps.',
         run: async () => ({ status: 'manual', result: 'navigate to chrome://policy' })
+    },
+    {
+        id: 'm-chrome-policy-conflict',
+        name: 'Policy conflict signals (Chrome 145+)',
+        detail: 'Check Admin console for policy conflict reporting',
+        section: 'manual',
+        severity: 3,
+        why: 'Chrome 144 started detecting and reporting policy conflict metadata - cases where a local setting is overriding a cloud-managed policy. Chrome 145 exposed these hardening signals via the Devices API, and Chrome 146 started surfacing them in the Admin console UI. This is new visibility into drift that historically was invisible. Worth checking whether your Admin console is showing these signals and incorporating them into regular audits.',
+        fix: 'In Google Admin Console > Devices > Chrome > Devices, look for policy conflict indicators on individual device records. If you want to pull this programmatically, the Chrome Devices API exposes the signals. Consider adding a GAM or API-based report to your regular audit cadence.',
+        run: async () => ({ status: 'manual', result: 'check Google Admin console' })
     },
     {
         id: 'm-chrome-management',
@@ -1891,8 +2390,20 @@ const TESTS = [
         section: 'manual',
         severity: 3,
         why: 'Verify that the expected management extensions (content filter, classroom monitoring) are present. Look for unfamiliar extensions that might have been sideloaded.',
-        fix: 'Should typically see: Linewize Connect, Classwize, and any classroom-specific tools like GoGuardian, Securly, or Hapara. Any other extensions deserve scrutiny.',
+        fix: 'Should typically see: Linewize Connect, Classwize, and any classroom-specific tools. Any other extensions deserve scrutiny. Beyond this tab, audit ExtensionSettings policy for per-extension runtime host permissions - allowlisted extensions may be over-privileged.',
         run: async () => ({ status: 'manual', result: 'navigate to chrome://extensions' })
+    },
+    {
+        id: 'm-extension-settings',
+        name: 'ExtensionSettings per-extension audit',
+        detail: 'Granular runtime host and permission restrictions',
+        section: 'manual',
+        severity: 3,
+        policy: 'ExtensionSettings',
+        policyUrl: policyUrl('ExtensionSettings'),
+        why: 'Even allowlisted extensions can be over-privileged. ExtensionSettings lets you restrict which sites each extension can inject into, which permissions it can use, and which update URL it can receive updates from. For high-privilege extensions like Linewize Connect or GoGuardian, verify the runtime_blocked_hosts and runtime_allowed_hosts are scoped correctly.',
+        fix: 'In Google Admin Console > Devices > Chrome > Apps & Extensions, review each force-installed extension. For extensions that should only interact with specific sites, use runtime_allowed_hosts. For extensions that should never touch sensitive sites (banking, HR), use runtime_blocked_hosts. Document the justification for each allowlisted extension.',
+        run: async () => ({ status: 'manual', result: 'audit each force-installed extension' })
     },
     {
         id: 'm-chrome-version',
@@ -1900,7 +2411,7 @@ const TESTS = [
         detail: 'Verify Chrome version is current',
         section: 'manual',
         severity: 4,
-        why: 'Device must be on current stable to have the latest security patches. Compare against chromereleases.googleblog.com for current stable version.',
+        why: 'Device must be on current stable to have the latest security patches. Compare against chromereleases.googleblog.com for current stable. Starting Chrome 153 (September 2026), Chrome moves to a 2-week release cycle, making version currency more time-sensitive. The automated check in the Device section does a version comparison against a constant baked into this tool - that constant should be updated quarterly.',
         run: async () => ({ status: 'manual', result: 'navigate to chrome://version' })
     },
     {
@@ -1910,9 +2421,46 @@ const TESTS = [
         section: 'manual',
         severity: 5,
         policy: 'DnsOverHttpsMode',
-        fix: 'Set DnsOverHttpsMode to "off" or "secure" with a specific district-controlled resolver. Set DnsOverHttpsTemplates to lock the provider.',
-        why: 'THE BIG ONE. If students can change Chrome Secure DNS from default to a custom provider, they can route DNS queries to Cloudflare/Google/Quad9 and bypass your content filter DNS visibility. Must be locked by policy.',
+        policyUrl: policyUrl('DnsOverHttpsMode'),
+        fix: 'Set DnsOverHttpsMode to "off" (to let Linewize see DNS queries) or "secure" with a district-controlled resolver. Set DnsOverHttpsTemplates to lock the provider. Also check BuiltInDnsClientEnabled. The specific choice depends on your Linewize deployment - if Linewize uses DNS-layer filtering, you likely want "off"; if it uses endpoint extension filtering only, "secure" with a trusted resolver may be acceptable.',
+        why: 'THE BIG ONE. If students can change Chrome Secure DNS from default to a custom provider, they can route DNS queries to Cloudflare/Google/Quad9 and bypass your content filter DNS visibility. Must be locked by policy. This is especially critical for Linewize deployments that rely on DNS-layer classification.',
         run: async () => ({ status: 'manual', result: 'check Settings > Privacy' })
+    },
+    {
+        id: 'm-ech',
+        name: 'Encrypted Client Hello (ECH)',
+        detail: 'EncryptedClientHelloEnabled policy state',
+        section: 'manual',
+        severity: 4,
+        policy: 'EncryptedClientHelloEnabled',
+        policyUrl: policyUrl('EncryptedClientHelloEnabled'),
+        fix: 'For Linewize deployments that rely on SNI inspection for domain classification, set EncryptedClientHelloEnabled to False on student OUs. ECH encrypts the SNI field, which is historically how content filters identify destination sites on TLS connections. If Linewize Connect does endpoint-side classification only and does not rely on SNI, you can leave ECH enabled - verify with Linewize support before making the call.',
+        why: 'ECH is a modern TLS privacy feature that encrypts the Server Name Indication field. For consumer users this is a privacy improvement. For managed K-12 devices using Linewize content filtering, ECH can blind the filter to destination hostnames, breaking domain-based classification. You need to decide based on your specific Linewize architecture which mode is appropriate, and lock it via policy rather than leaving it to Chrome defaults.',
+        run: async () => ({ status: 'manual', result: 'check chrome://policy for EncryptedClientHelloEnabled' })
+    },
+    {
+        id: 'm-quic',
+        name: 'QUIC protocol allowed',
+        detail: 'QuicAllowed policy state',
+        section: 'manual',
+        severity: 3,
+        policy: 'QuicAllowed',
+        policyUrl: policyUrl('QuicAllowed'),
+        fix: 'Consider setting QuicAllowed to False on student OUs if Linewize has trouble inspecting QUIC traffic. QUIC runs over UDP and is harder for some content filters to intercept than traditional TCP TLS. Blocking QUIC forces fallback to HTTP/2 over TCP, which is more predictable for filter inspection. Verify with Linewize support whether their current version handles QUIC correctly before making changes.',
+        why: 'QUIC is Google\'s HTTP/3 transport, used heavily by Google services. It is UDP-based and encrypted from the first packet, which makes inline inspection harder than traditional TLS. Some content filters handle QUIC well; others effectively ignore it and pass traffic through unfiltered. If you see Linewize logs that look sparse or students discovering that certain sites bypass filtering, QUIC may be involved.',
+        run: async () => ({ status: 'manual', result: 'check chrome://policy for QuicAllowed' })
+    },
+    {
+        id: 'm-https-only',
+        name: 'HTTPS-Only Mode enforcement',
+        detail: 'HttpsOnlyMode policy state',
+        section: 'manual',
+        severity: 3,
+        policy: 'HttpsOnlyMode',
+        policyUrl: policyUrl('HttpsOnlyMode'),
+        fix: 'Set HttpsOnlyMode to "force_enabled" for all OUs. Also enable HttpsUpgradesEnabled so Chrome automatically attempts HTTPS for HTTP navigations.',
+        why: 'Forces Chrome to warn before loading HTTP pages, preventing passive eavesdropping and MITM downgrade attacks. Should be enforced org-wide.',
+        run: async () => ({ status: 'manual', result: 'check chrome://settings/security' })
     },
     {
         id: 'm-proxy-settings',
@@ -1920,7 +2468,9 @@ const TESTS = [
         detail: 'Settings > Network > [WiFi] > Proxy',
         section: 'manual',
         severity: 5,
-        fix: 'Lock proxy settings via policy so students cannot configure alternative routing.',
+        policy: 'ProxySettings',
+        policyUrl: policyUrl('ProxySettings'),
+        fix: 'Lock proxy settings via ProxySettings policy so students cannot configure alternative routing. Recent Chrome releases added improved PAC file merging so you can prepend or override specific routes without managing the full PAC file.',
         why: 'If students can configure a manual proxy, they can route all traffic through any server they want - complete content filter bypass.',
         run: async () => ({ status: 'manual', result: 'check network settings' })
     },
@@ -1940,7 +2490,8 @@ const TESTS = [
         detail: 'Ctrl+Alt+Shift+R from login screen',
         section: 'manual',
         severity: 4,
-        policy: 'ForcedReEnrollment',
+        policy: 'DeviceForcedReEnrollmentEnabled',
+        policyUrl: policyUrl('DeviceForcedReEnrollmentEnabled'),
         fix: 'Enable forced re-enrollment in Google Admin: Devices > Chrome > Settings > Device settings > Forced re-enrollment.',
         why: 'If a student can Powerwash the device and escape management, they have full control. Forced re-enrollment brings wiped devices back under policy.',
         run: async () => ({ status: 'manual', result: 'test with spare device' })
@@ -1952,6 +2503,7 @@ const TESTS = [
         section: 'manual',
         severity: 3,
         policy: 'DeviceGuestModeEnabled',
+        policyUrl: policyUrl('DeviceGuestModeEnabled'),
         fix: 'Set DeviceGuestModeEnabled to False in Google Admin.',
         why: 'Guest mode bypasses user-level policies. On shared or student devices, should be disabled.',
         run: async () => ({ status: 'manual', result: 'check login screen' })
@@ -1963,6 +2515,7 @@ const TESTS = [
         section: 'manual',
         severity: 4,
         policy: 'DeviceAllowedUsers',
+        policyUrl: policyUrl('DeviceAllowedUsers'),
         fix: 'Configure DeviceAllowedUsers to restrict login to the district domain. Also consider RestrictSigninToPattern.',
         why: 'If personal Google accounts can sign in on student devices, those accounts bypass all user-level enterprise policies. Must be restricted.',
         run: async () => ({ status: 'manual', result: 'test at login screen' })
@@ -1973,7 +2526,8 @@ const TESTS = [
         detail: 'Try installing any extension from Chrome Web Store',
         section: 'manual',
         severity: 4,
-        policy: 'ExtensionInstallBlocklist / ExtensionInstallAllowlist',
+        policy: 'ExtensionInstallBlocklist',
+        policyUrl: policyUrl('ExtensionInstallBlocklist'),
         fix: 'Set ExtensionInstallBlocklist to ["*"] then use ExtensionInstallAllowlist to whitelist approved extensions.',
         why: 'Students should not be installing arbitrary extensions. Extensions have deep browser access and can interfere with monitoring.',
         run: async () => ({ status: 'manual', result: 'try Chrome Web Store' })
@@ -1985,8 +2539,13 @@ const TESTS = [
         section: 'manual',
         severity: 3,
         policy: 'DeveloperToolsAvailability',
+        policyUrl: policyUrl('DeveloperToolsAvailability'),
         fix: 'Set DeveloperToolsAvailability to 2 (DeveloperToolsDisallowed) for student OUs.',
         why: 'DevTools lets users inspect and modify pages. Advanced students can use this to disable monitoring extensions or interact with page JavaScript in unexpected ways.',
+        contexts: {
+            'staff': { severity: 1, note: 'Staff developers or CTE teachers may need DevTools for curriculum.' },
+            'admin': { severity: 0 }
+        },
         run: async () => ({ status: 'manual', result: 'press F12' })
     },
     {
@@ -2004,9 +2563,13 @@ const TESTS = [
         detail: 'Settings > About ChromeOS > Developers > Linux',
         section: 'manual',
         severity: 4,
-        policy: 'VirtualMachinesAllowed / CrostiniAllowed',
-        fix: 'Set CrostiniAllowed to False for student OUs.',
+        policy: 'CrostiniAllowed',
+        policyUrl: policyUrl('CrostiniAllowed'),
+        fix: 'Set CrostiniAllowed to False for student OUs. Also VirtualMachinesAllowed.',
         why: 'Linux (Crostini) gives users a full Linux VM where they can run arbitrary native code. Should be disabled for students.',
+        contexts: {
+            'staff': { severity: 2, note: 'CTE staff running programming curriculum may legitimately need Crostini. Consider a dedicated OU for those staff.' }
+        },
         run: async () => ({ status: 'manual', result: 'check Settings' })
     },
     {
@@ -2016,6 +2579,7 @@ const TESTS = [
         section: 'manual',
         severity: 3,
         policy: 'ArcEnabled',
+        policyUrl: policyUrl('ArcEnabled'),
         fix: 'Set ArcEnabled to False or use specific ArcPolicy to restrict which apps can be installed.',
         why: 'Android apps from Play Store have more capabilities than web apps. Should be tightly controlled on student devices.',
         run: async () => ({ status: 'manual', result: 'check launcher' })
@@ -2027,6 +2591,7 @@ const TESTS = [
         section: 'manual',
         severity: 2,
         policy: 'ExternalStorageDisabled',
+        policyUrl: policyUrl('ExternalStorageDisabled'),
         why: 'USB storage is an exfiltration vector and a malware ingress vector. Policy varies by district.',
         run: async () => ({ status: 'manual', result: 'physical USB test' })
     },
@@ -2037,6 +2602,7 @@ const TESTS = [
         section: 'manual',
         severity: 4,
         policy: 'IncognitoModeAvailability',
+        policyUrl: policyUrl('IncognitoModeAvailability'),
         fix: 'Set IncognitoModeAvailability to 1 (Disabled) for student OUs.',
         why: 'Incognito mode disables extensions by default. Linewize Connect may not filter in incognito. Should be disabled entirely.',
         run: async () => ({ status: 'manual', result: 'test with Ctrl+Shift+N' })
@@ -2076,8 +2642,9 @@ const TESTS = [
         section: 'manual',
         severity: 1,
         policy: 'AutofillAddressEnabled',
-        fix: 'For student OUs, consider setting AutofillAddressEnabled to False in Google Admin.',
-        why: 'Autofill storing personal info in the browser profile is a minor privacy concern for student accounts. Chrome does not expose the autofill policy state to JavaScript, so this requires manual verification of the setting in Chrome Settings.',
+        policyUrl: policyUrl('AutofillAddressEnabled'),
+        fix: 'For student OUs, consider setting AutofillAddressEnabled to False.',
+        why: 'Autofill storing personal info in the browser profile is a minor privacy concern for student accounts.',
         run: async () => ({ status: 'manual', result: 'open chrome://settings/addresses' })
     },
     {
@@ -2087,9 +2654,22 @@ const TESTS = [
         section: 'manual',
         severity: 3,
         policy: 'AutofillCreditCardEnabled',
+        policyUrl: policyUrl('AutofillCreditCardEnabled'),
         fix: 'Set AutofillCreditCardEnabled to False for student OUs. Student devices should never store payment information.',
-        why: 'Chrome does not expose autofill policy state to JS. Check Settings > Payment methods directly. If the "Save and fill payment methods" toggle can be changed, the policy is not locked.',
+        why: 'Chrome does not expose autofill policy state to JS. Check Settings > Payment methods directly.',
         run: async () => ({ status: 'manual', result: 'open chrome://settings/payments' })
+    },
+    {
+        id: 'm-autofill-enhanced',
+        name: 'Enhanced autofill setting (Chrome 146+)',
+        detail: 'Newer autofill data types',
+        section: 'manual',
+        severity: 2,
+        policy: 'AutofillEnhancedEnabled',
+        policyUrl: policyUrl('AutofillEnhancedEnabled'),
+        fix: 'Starting Chrome 146, some users can save and autofill additional data types previously only available with Enhanced autofill enabled. For student OUs, disable this to minimize data stored in student profiles.',
+        why: 'Enhanced autofill expanded the set of data Chrome can save and autofill. More data stored in student profiles means more exposure surface in the event of account compromise.',
+        run: async () => ({ status: 'manual', result: 'check Admin console' })
     },
     {
         id: 'm-password-manager',
@@ -2098,8 +2678,9 @@ const TESTS = [
         section: 'manual',
         severity: 2,
         policy: 'PasswordManagerEnabled',
+        policyUrl: policyUrl('PasswordManagerEnabled'),
         fix: 'For shared/checked-out devices, consider setting PasswordManagerEnabled to False. On personally-assigned devices with managed accounts, leaving it enabled is usually fine.',
-        why: 'On shared or checked-out devices, saved passwords persist between users and create credential theft risk. Chrome does not expose the password manager policy state to JS, so check chrome://settings/passwords directly. If the "Offer to save passwords" toggle can be changed, the policy is not enforced.',
+        why: 'On shared or checked-out devices, saved passwords persist between users and create credential theft risk.',
         run: async () => ({ status: 'manual', result: 'open chrome://settings/passwords' })
     },
     {
@@ -2108,11 +2689,58 @@ const TESTS = [
         detail: 'Navigate to chrome://settings/languages',
         section: 'manual',
         severity: 1,
-        policy: 'SpellcheckEnabled / SpellCheckServiceEnabled',
+        policy: 'SpellCheckServiceEnabled',
+        policyUrl: policyUrl('SpellCheckServiceEnabled'),
         fix: 'For student OUs, consider using basic (local) spellcheck only. Enhanced spellcheck sends text content to Google servers.',
-        why: 'Enhanced spellcheck sends text to Google servers for spell checking. Basic local spellcheck does not. Chrome does not expose spellcheck results or configuration to JS for privacy reasons, so this must be verified in Chrome Settings.',
+        why: 'Enhanced spellcheck sends text to Google servers for spell checking. Basic local spellcheck does not.',
         run: async () => ({ status: 'manual', result: 'open chrome://settings/languages' })
     },
+    {
+        id: 'm-url-blocklist',
+        name: 'Browser-level URL blocklist',
+        detail: 'Defense in depth for off-network devices',
+        section: 'manual',
+        severity: 2,
+        policy: 'URLBlocklist',
+        policyUrl: policyUrl('URLBlocklist'),
+        fix: 'Configure URLBlocklist at the browser level as defense in depth for your Linewize filtering. This is especially valuable for devices that go home with students - URLBlocklist applies regardless of network location, while Linewize Connect may have coverage gaps off-network. Keep the list focused on high-severity categories (known phishing, known malware infrastructure) rather than duplicating Linewize\'s full category list.',
+        why: 'Since Linewize Connect travels with the device, this is a lower-priority check for you than for districts without endpoint filtering. Worth having as a secondary layer for the narrow set of URLs where you want belt-and-suspenders enforcement.',
+        run: async () => ({ status: 'manual', result: 'check Admin console' })
+    },
+    {
+        id: 'm-security-connector',
+        name: 'OnSecurityEventEnterpriseConnector',
+        detail: 'Security event reporting to external endpoint',
+        section: 'manual',
+        severity: 2,
+        policy: 'OnSecurityEventEnterpriseConnector',
+        policyUrl: policyUrl('OnSecurityEventEnterpriseConnector'),
+        fix: 'Configure OnSecurityEventEnterpriseConnector to send Chrome security events (unsafe download, password reuse, dangerous site visit) to an external SIEM or webhook endpoint. For your environment this could feed into CheckMK or a Google Chat webhook for real-time visibility. Related: OnPrintEnterpriseConnector, OnFileAttachedEnterpriseConnector, OnFileDownloadedEnterpriseConnector, OnBulkDataEntryEnterpriseConnector.',
+        why: 'Chrome can emit structured security events for visibility into user-level security incidents. Without this configured, events like "user clicked through a Safe Browsing warning" or "user reused a password on a suspicious site" are invisible to your monitoring. For a district with existing monitoring infrastructure, this is high-value telemetry that\'s usually not turned on.',
+        run: async () => ({ status: 'manual', result: 'check Admin console connectors' })
+    },
+    {
+        id: 'm-dlp-evidence',
+        name: 'DLP Evidence Locker configuration',
+        detail: 'Large file scanning (up to 2GB)',
+        section: 'manual',
+        severity: 1,
+        why: 'Chrome previously skipped files over 50MB and all encrypted files during DLP content scanning. Recent updates closed this gap - files up to 2GB can now be sent to the Evidence Locker when DLP rules are configured to save evidence. No new policy is required; this is automatically controlled by existing DLP rule configurations. If your district has DLP rules configured, verify they are working as expected with the expanded scan size.',
+        fix: 'If you have DLP rules in Google Admin Console, no action needed - the change applies automatically. If you don\'t have DLP rules, this is a reminder that the capability exists and may be worth configuring for high-value data categories (SSNs, student records in specific formats, district confidential markings).',
+        run: async () => ({ status: 'manual', result: 'check Admin DLP rules' })
+    },
+    {
+        id: 'm-site-isolation',
+        name: 'Site isolation policy',
+        detail: 'SitePerProcess / IsolateOrigins',
+        section: 'manual',
+        severity: 2,
+        policy: 'SitePerProcess',
+        policyUrl: policyUrl('SitePerProcess'),
+        fix: 'Site isolation is on by default on ChromeOS. Verify SitePerProcess is not set to False by policy. For additional isolation of high-value origins, configure IsolateOrigins with your district\'s sensitive domains (SIS, gradebook, HR system).',
+        why: 'Site isolation runs each site in its own process, mitigating Spectre-class side-channel attacks and sandbox escape vulnerabilities. Should be on org-wide.',
+        run: async () => ({ status: 'manual', result: 'check chrome://policy' })
+    }
 ];
 
 // ============================================================================
@@ -2147,23 +2775,22 @@ function testSafeReach(url) {
 }
 
 // ============================================================================
-// SCORING
+// SCORING (context-aware)
 // ============================================================================
 
 function computeScore() {
-    // Weight each check by severity. Good = full credit, bad = zero credit,
-    // warn = half credit. Info/pending/manual don't count.
     let totalWeight = 0;
     let earnedWeight = 0;
     for (const test of TESTS) {
-        if (test.severity === 0) continue; // severity 0 = info only, doesn't count
-        if (test.section === 'manual') continue; // manual doesn't count toward automated score
+        const sev = resolveSeverity(test);
+        if (sev === 0) continue;
+        if (test.section === 'manual') continue;
         const r = state.results[test.id];
         if (!r) continue;
         if (r.status === 'info') continue;
-        totalWeight += test.severity;
-        if (r.status === 'good') earnedWeight += test.severity;
-        else if (r.status === 'warn') earnedWeight += test.severity * 0.5;
+        totalWeight += sev;
+        if (r.status === 'good') earnedWeight += sev;
+        else if (r.status === 'warn') earnedWeight += sev * 0.5;
         // bad = 0
     }
     if (totalWeight === 0) return null;
@@ -2200,24 +2827,58 @@ function updateScore() {
     }
     circle.className = 'score-circle ' + cls;
     title.textContent = msg;
-    summary.textContent = sub + ' Click any test row to see policy names and fix guidance. Remember this is a rough diagnostic, not a complete security assessment.';
+    const ctx = CONTEXT_LABELS[getContext()];
+    summary.textContent = sub + ' Context: ' + ctx + '. Click any test row to see policy names, doc links, and fix guidance.';
+}
+
+// ============================================================================
+// BASELINE DIFF
+// ============================================================================
+
+function getDriftForTest(testId) {
+    const baseline = state.baseline;
+    if (!baseline || !baseline.results) return null;
+    const current = state.results[testId];
+    const prior = baseline.results[testId];
+    if (!current || !prior) return null;
+    if (current.status !== prior.status || current.result !== prior.result) {
+        return { prior: prior, current: current };
+    }
+    return null;
+}
+
+function updateBaselineBar() {
+    const el = document.getElementById('baseline-status');
+    if (state.baseline) {
+        const d = new Date(state.baseline.savedAt);
+        const ctx = CONTEXT_LABELS[state.baseline.context] || state.baseline.context;
+        el.textContent = d.toLocaleString() + ' · ' + ctx + ' · Chrome ' + (state.baseline.chromeVersion || '?');
+    } else {
+        el.textContent = 'none saved';
+    }
 }
 
 // ============================================================================
 // UI
 // ============================================================================
 
-const state = { results: loadState(), running: false };
+const state = {
+    results: loadState(),
+    baseline: loadBaseline(),
+    running: false
+};
 
 const SECTIONS = [
-    'device', 'management', 'policies', 'hardware', 'sensors',
-    'storage', 'fingerprint', 'webrtc', 'network', 'reach', 'manual'
+    'device', 'management', 'policies', 'modern-web', 'genai', 'hardware',
+    'sensors', 'storage', 'fingerprint', 'webrtc', 'network', 'reach', 'manual'
 ];
 
 const SECTION_NAMES = {
     'device': 'DEVICE & BROWSER FINGERPRINT',
     'management': 'ENTERPRISE MANAGEMENT',
     'policies': 'CHROME POLICY ENFORCEMENT',
+    'modern-web': 'MODERN WEB PLATFORM (Chrome 140s+)',
+    'genai': 'GENERATIVE AI FEATURES',
     'hardware': 'HARDWARE APIS',
     'sensors': 'SENSOR & DEVICE APIS',
     'storage': 'STORAGE & PRIVACY APIS',
@@ -2233,16 +2894,30 @@ function buildDrawerContent(test) {
     if (test.why) {
         parts.push('<h4>Why it matters</h4><p>' + escapeHtml(test.why) + '</p>');
     }
+    const ctxNote = resolveContextNote(test);
+    if (ctxNote) {
+        parts.push('<h4>Context note (' + escapeHtml(CONTEXT_LABELS[getContext()]) + ')</h4><div class="context-note">' + escapeHtml(ctxNote) + '</div>');
+    }
     if (test.policy) {
-        parts.push('<h4>Related policy</h4><p><span class="policy-name">' + escapeHtml(test.policy) + '</span></p>');
+        let policyHtml = '<h4>Related policy</h4><p><span class="policy-name">' + escapeHtml(test.policy) + '</span>';
+        if (test.policyUrl) {
+            policyHtml += ' <a class="policy-link" href="' + escapeHtml(test.policyUrl) + '" target="_blank" rel="noopener">docs &rarr;</a>';
+        }
+        policyHtml += '</p>';
+        parts.push(policyHtml);
     }
     if (test.fix) {
         parts.push('<h4>How to fix</h4><p>' + escapeHtml(test.fix) + '</p>');
     }
-    if (test.severity !== undefined) {
-        const sevLabels = ['info only', 'low', 'low-moderate', 'moderate', 'high', 'critical'];
-        parts.push('<h4>Severity</h4><p>' + test.severity + '/5 (' + sevLabels[test.severity] + ')</p>');
+    const sev = resolveSeverity(test);
+    const sevLabels = ['info only', 'low', 'low-moderate', 'moderate', 'high', 'critical'];
+    parts.push('<h4>Severity</h4><p>' + sev + '/5 (' + sevLabels[sev] + ')</p>');
+
+    const drift = getDriftForTest(test.id);
+    if (drift) {
+        parts.push('<h4>Baseline drift</h4><div class="drift-note">Baseline had: <code>' + escapeHtml(drift.prior.status) + '</code> &mdash; "' + escapeHtml(drift.prior.result) + '". Now: <code>' + escapeHtml(drift.current.status) + '</code> &mdash; "' + escapeHtml(drift.current.result) + '".</div>');
     }
+
     if (parts.length === 0) {
         parts.push('<p><em>No additional details available for this check.</em></p>');
     }
@@ -2266,17 +2941,20 @@ function renderTestRows() {
             const resultText = result ? result.result : '';
             const resultCls = ['bad','warn','good'].indexOf(status) >= 0 ? status : '';
 
+            const drift = getDriftForTest(test.id);
+            if (drift) row.classList.add('drift');
+            const driftBadge = drift ? '<span class="drift-badge">drift</span>' : '';
+
             row.innerHTML =
                 '<span class="status status-' + status + '">' + status + '</span>' +
                 '<div class="body">' +
-                    '<div class="name">' + escapeHtml(test.name) + '</div>' +
+                    '<div class="name">' + escapeHtml(test.name) + driftBadge + '</div>' +
                     '<div class="detail">' + escapeHtml(test.detail) + '</div>' +
                 '</div>' +
                 '<div class="result ' + resultCls + '">' + escapeHtml(resultText) + '</div>' +
                 '<div class="drawer">' + buildDrawerContent(test) + '</div>';
 
             row.addEventListener('click', (e) => {
-                // Don't toggle if clicking on a link or button inside the drawer
                 if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
                 row.classList.toggle('open');
             });
@@ -2286,6 +2964,7 @@ function renderTestRows() {
     }
     updateCounts();
     updateScore();
+    updateBaselineBar();
 }
 
 function updateCounts() {
@@ -2369,7 +3048,8 @@ async function runAllTests() {
     }
 
     saveState();
-    updateCounts();
+    // Re-render to apply drift detection against baseline now that all results are in
+    renderTestRows();
     state.running = false;
     document.getElementById('run-all').disabled = false;
 }
@@ -2384,8 +3064,9 @@ function resetTests() {
 function exportReport() {
     const lines = [];
     lines.push('K-12 Chromebook Security Diagnostic Report');
-    lines.push('Version 2.0');
+    lines.push('Version 3.0');
     lines.push('Generated: ' + new Date().toISOString());
+    lines.push('Context: ' + CONTEXT_LABELS[getContext()]);
     lines.push('User Agent: ' + navigator.userAgent);
     lines.push('');
 
@@ -2395,9 +3076,15 @@ function exportReport() {
         lines.push('');
     }
 
+    if (state.baseline) {
+        lines.push('BASELINE: ' + state.baseline.savedAt + ' (' + (CONTEXT_LABELS[state.baseline.context] || state.baseline.context) + ')');
+        lines.push('');
+    }
+
     lines.push('='.repeat(75));
 
     let good = 0, bad = 0, warn = 0, info = 0;
+    const driftItems = [];
     for (const test of TESTS) {
         const r = state.results[test.id];
         if (!r) continue;
@@ -2405,6 +3092,7 @@ function exportReport() {
         else if (r.status === 'bad') bad++;
         else if (r.status === 'warn') warn++;
         else if (r.status === 'info') info++;
+        if (getDriftForTest(test.id)) driftItems.push(test);
     }
 
     lines.push('SUMMARY');
@@ -2412,7 +3100,23 @@ function exportReport() {
     lines.push('  Concerning: ' + bad);
     lines.push('  Warn:       ' + warn);
     lines.push('  Info:       ' + info);
+    if (driftItems.length > 0) {
+        lines.push('  Drift:      ' + driftItems.length + ' (against baseline)');
+    }
     lines.push('');
+
+    if (driftItems.length > 0) {
+        lines.push('='.repeat(75));
+        lines.push('BASELINE DRIFT');
+        lines.push('='.repeat(75));
+        for (const test of driftItems) {
+            const d = getDriftForTest(test.id);
+            lines.push('- ' + test.name);
+            lines.push('    Was:  [' + d.prior.status.toUpperCase() + '] ' + d.prior.result);
+            lines.push('    Now:  [' + d.current.status.toUpperCase() + '] ' + d.current.result);
+        }
+        lines.push('');
+    }
 
     for (const sec of SECTIONS) {
         lines.push('='.repeat(75));
@@ -2440,11 +3144,12 @@ function exportReport() {
     lines.push('NOTES');
     lines.push('='.repeat(75));
     lines.push('- This tool is a diagnostic, not a complete security assessment.');
+    lines.push('- Scoring and expected values are adjusted for the selected context.');
     lines.push('- It reports on policy enforcement state and browser capabilities.');
     lines.push('- It does not attempt bypasses, exploits, or penetration testing.');
     lines.push('- The manual checklist items often contain the most valuable findings.');
-    lines.push('- Content filter effectiveness is not tested here - verify via your');
-    lines.push('  filter dashboard (Linewize, Lightspeed, GoGuardian, etc.).');
+    lines.push('- Content filter effectiveness is not tested here - verify via Linewize.');
+    lines.push('- Chrome version constant in this tool must be updated quarterly.');
 
     document.getElementById('export-output').value = lines.join('\n');
     document.getElementById('export-output').select();
@@ -2453,11 +3158,20 @@ function exportReport() {
 
 function exportJson() {
     const output = {
-        version: '2.0',
+        version: '3.0',
         generatedAt: new Date().toISOString(),
+        context: getContext(),
+        contextLabel: CONTEXT_LABELS[getContext()],
         userAgent: navigator.userAgent,
+        chromeStableConstant: CURRENT_CHROME_STABLE_MAJOR,
+        chromeStableConstantDate: CURRENT_CHROME_STABLE_DATE,
         score: computeScore(),
-        summary: { good: 0, bad: 0, warn: 0, info: 0, pending: 0 },
+        baseline: state.baseline ? {
+            savedAt: state.baseline.savedAt,
+            context: state.baseline.context,
+            chromeVersion: state.baseline.chromeVersion
+        } : null,
+        summary: { good: 0, bad: 0, warn: 0, info: 0, pending: 0, drift: 0 },
         sections: {}
     };
 
@@ -2472,14 +3186,19 @@ function exportJson() {
         const r = state.results[test.id];
         const status = r ? r.status : 'pending';
         output.summary[status] = (output.summary[status] || 0) + 1;
+        const drift = getDriftForTest(test.id);
+        if (drift) output.summary.drift++;
         output.sections[test.section].tests.push({
             id: test.id,
             name: test.name,
             detail: test.detail,
-            severity: test.severity,
+            severity: resolveSeverity(test),
+            baseSeverity: test.severity,
             policy: test.policy || null,
+            policyUrl: test.policyUrl || null,
             status: status,
-            result: r ? r.result : null
+            result: r ? r.result : null,
+            drift: drift ? { prior: drift.prior, current: drift.current } : null
         });
     }
 
@@ -2498,6 +3217,63 @@ function expandAllDrawers() {
     document.getElementById('expand-all').textContent = anyClosed ? 'Collapse All Details' : 'Expand All Details';
 }
 
+function doSaveBaseline() {
+    if (Object.keys(state.results).length === 0) {
+        alert('Run tests first, then save a baseline.');
+        return;
+    }
+    const b = saveBaseline();
+    if (b) {
+        state.baseline = b;
+        renderTestRows();
+    }
+}
+
+function doImportBaseline() {
+    const json = prompt('Paste baseline JSON (from a previous "Copy JSON" export):');
+    if (!json) return;
+    try {
+        const parsed = JSON.parse(json);
+        // Accept either a full JSON export or a raw baseline object
+        let baseline;
+        if (parsed.results && parsed.savedAt) {
+            baseline = parsed;
+        } else if (parsed.sections) {
+            // Rehydrate from a full JSON export
+            const results = {};
+            for (const secName in parsed.sections) {
+                for (const t of parsed.sections[secName].tests) {
+                    if (t.status && t.status !== 'pending') {
+                        results[t.id] = { status: t.status, result: t.result };
+                    }
+                }
+            }
+            baseline = {
+                savedAt: parsed.generatedAt || new Date().toISOString(),
+                context: parsed.context || 'student-sec',
+                chromeVersion: detectChromeMajor(),
+                results: results
+            };
+        } else {
+            alert('JSON format not recognized.');
+            return;
+        }
+        localStorage.setItem(BASELINE_KEY, JSON.stringify(baseline));
+        state.baseline = baseline;
+        renderTestRows();
+    } catch (e) {
+        alert('Could not parse JSON: ' + e.message);
+    }
+}
+
+function doClearBaseline() {
+    if (!state.baseline) return;
+    if (!confirm('Clear the saved baseline?')) return;
+    clearBaseline();
+    state.baseline = null;
+    renderTestRows();
+}
+
 function escapeHtml(text) {
     if (text === null || text === undefined) return '';
     const div = document.createElement('div');
@@ -2514,6 +3290,17 @@ document.getElementById('reset').addEventListener('click', resetTests);
 document.getElementById('export').addEventListener('click', exportReport);
 document.getElementById('export-json').addEventListener('click', exportJson);
 document.getElementById('expand-all').addEventListener('click', expandAllDrawers);
+document.getElementById('save-baseline').addEventListener('click', doSaveBaseline);
+document.getElementById('import-baseline').addEventListener('click', doImportBaseline);
+document.getElementById('clear-baseline').addEventListener('click', doClearBaseline);
+
+// Context selector
+const ctxSelect = document.getElementById('context-select');
+ctxSelect.value = getContext();
+ctxSelect.addEventListener('change', (e) => {
+    setContext(e.target.value);
+    renderTestRows();
+});
 
 renderTestRows();
 </script>
